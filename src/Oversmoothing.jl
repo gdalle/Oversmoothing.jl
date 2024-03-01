@@ -39,6 +39,6 @@ export ErdosRenyi, ER, StochasticBlockModel, SBM
 export Contextual
 export NeighborhoodAverage, NeighborhoodSum
 export nb_communities, get_community, community_size
-export embedding_samples, split_by_community
+export embedding_samples, embedding_samples_indep, split_by_community
 
 end # module Oversmoothing

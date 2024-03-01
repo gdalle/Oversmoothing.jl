@@ -4,15 +4,8 @@ using StableRNGs
 
 rng = StableRNG(63)
 
-function plot_2d_embeddings(
-    rng::AbstractRNG,
-    contextual::Contextual,
-    convolution::AbstractConvolution,
-    layers::Integer;
-    kwargs...,
-)
+function plot_2d_embeddings(H_samples, contextual)
     C = nb_communities(contextual)
-    H_samples = embedding_samples(rng, contextual, convolution, layers; kwargs...)
     H_samples_by_community = split_by_community(contextual, H_samples)
 
     fig = Figure()
