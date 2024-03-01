@@ -1,3 +1,6 @@
+using Aqua
+using JuliaFormatter
+using JET
 using Oversmoothing
 using Test
 
@@ -10,5 +13,8 @@ using Test
     end
     @testset "JET" begin
         JET.test_package(Oversmoothing; target_defined_modules=true)
+    end
+    @testset "Graphs" begin
+        include("graphs.jl")
     end
 end

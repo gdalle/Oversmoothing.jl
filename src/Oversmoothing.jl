@@ -2,7 +2,7 @@ module Oversmoothing
 
 using Base.Threads: @threads, nthreads
 using BlockArrays: Block, BlockArray, undef_blocks
-using DensityInterface: DensityInterface, densityof, logdensityof
+using DensityInterface: DensityInterface, IsDensity, densityof, logdensityof
 using Graphs: adjacency_matrix, erdos_renyi, stochastic_block_model
 using LinearAlgebra:
     BLAS, Cholesky, Diagonal, I, Symmetric, cholesky, det, dot, inv, logdet, mul!
@@ -34,6 +34,7 @@ Gaussian(μ::AbstractVector, Σ::AbstractMatrix) = MultivariateGaussian(μ, Σ)
 
 export AbstractMeasure, AbstractRandomGraph, AbstractConvolution
 export Gaussian, UnivariateGaussian, MultivariateGaussian, Mixture
+export bernoulli_matrix
 export ErdosRenyi, ER, StochasticBlockModel, SBM
 export Contextual
 export NeighborhoodAverage, NeighborhoodSum

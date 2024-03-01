@@ -5,7 +5,6 @@ version = "0.1.0"
 
 [deps]
 BlockArrays = "8e7c35d0-a365-5155-bbbb-fb81a777f24e"
-CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 DensityInterface = "b429d917-457f-4dbc-8f4c-0cc954292b1d"
 Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"

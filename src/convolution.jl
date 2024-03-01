@@ -22,7 +22,8 @@ function apply!(
     D::AbstractMatrix,
     ::NeighborhoodAverage,
 )
-    apply!(H, scratch, A, D, NeighborhoodSum())
+    mul!(scratch, A, H)
+    H .+= scratch
     mul!(scratch, inv(D + I), H)
     return H .= scratch
 end
