@@ -1,4 +1,3 @@
-
 @kwdef struct StochasticBlockModel{T<:Real} <: AbstractRandomGraph
     S::Vector{Int}
     Q::Matrix{T}
@@ -6,19 +5,14 @@ end
 
 const SBM = StochasticBlockModel
 
-Base.length(sbm::SBM) = sum(sbm.S)
-community_size(sbm::SBM, c::Integer) = sbm.S[c]
+nb_vertices(sbm::SBM) = sum(sbm.S)
 nb_communities(sbm::SBM) = length(sbm.S)
 
-function get_community(sbm::SBM, v::Integer)
+function community_range(sbm::SBM, c::Integer)
     (; S) = sbm
-    c = 1
-    S_sum = S[c]
-    while v > S_sum
-        c += 1
-        S_sum += S[c]
-    end
-    return c
+    i = sum(view(S, 1:(c - 1)))
+    j = i + S[c]
+    return (i + 1):j
 end
 
 function Random.rand(rng::AbstractRNG, sbm::SBM)

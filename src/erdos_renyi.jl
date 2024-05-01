@@ -1,4 +1,3 @@
-
 @kwdef struct ErdosRenyi{T<:Real} <: AbstractRandomGraph
     N::Int
     q::T
@@ -6,10 +5,9 @@ end
 
 const ER = ErdosRenyi
 
-Base.length(er::ER) = er.N
+nb_vertices(er::ER) = er.N
 nb_communities(er::ER) = 1
-get_community(er::ER, v::Integer) = 1
-community_size(er::ER, c::Integer) = length(er)
+community_range(er::ER, c::Integer) = 1:length(er)
 
 function Random.rand(rng::AbstractRNG, er::ER)
     A = bernoulli_matrix(rng, er.N, er.N, er.q)
