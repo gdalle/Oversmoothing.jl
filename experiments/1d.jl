@@ -2,9 +2,11 @@ using Pkg
 Pkg.activate(dirname(@__DIR__))
 
 using Distributions
+using LinearAlgebra
 using Oversmoothing
 using StableRNGs
 
+BLAS.set_num_threads(1)
 rng = StableRNG(63)
 
 graph = SBM(
@@ -22,7 +24,8 @@ features = [
     MvNormal([+3.0], [+0.2;;]),
 ]
 
-H = @time embeddings(rng, graph, features; layers=3, resample_graph=false);
-H_split = split_by_community(H, graph);
-
+H = @time embeddings(rng, graph, features; layers=0, resample_graph=true);
+H_split = split_by_community(H, graph)
 plot_1d_embeddings(H_split)
+
+@profview plot_misclassification(rng, graph, features; max_layers=7)

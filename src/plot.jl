@@ -94,3 +94,39 @@ function plot_2d_embeddings(H_split::Vector{<:AbstractMatrix})
     resize_to_layout!(fig)
     return fig
 end
+
+function plot_misclassification(
+    rng::AbstractRNG,
+    graph::AbstractRandomGraph,
+    features::Vector{<:MultivariateDistribution};
+    max_layers::Integer,
+)
+    probas_no_resample = misclassification_probability_evolution(
+        rng, graph, features; max_layers, resample_graph=false
+    )
+
+    probas_resample = misclassification_probability_evolution(
+        rng, graph, features; max_layers, resample_graph=true
+    )
+
+    fig = Figure()
+    ax = Axis(fig[1, 1]; xlabel="layers", ylabel="misclassification error")
+    scatterlines!(
+        ax,
+        0:(length(probas_no_resample) - 1),
+        probas_no_resample;
+        label="no resampling",
+        linestyle=:dash,
+        marker=:diamond,
+    )
+    scatterlines!(
+        ax,
+        0:(length(probas_resample) - 1),
+        probas_resample;
+        label="resampling",
+        linestyle=nothing,
+        marker=:circle,
+    )
+    axislegend(ax; position=:lt)
+    return fig
+end

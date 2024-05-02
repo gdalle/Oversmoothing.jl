@@ -9,8 +9,7 @@ end
 function empirical_kl(X::AbstractMatrix, Y::AbstractMatrix; kwargs...)
     P = density_estimator(X; kwargs...)
     Q = density_estimator(Y; kwargs...)
-    kl = 0.0
-    for row in eachrow(X)
+    kl = sum(eachrow(X)) do row
         x = Tuple(row)
         Px = pdf(P, x...)
         Qx = pdf(Q, x...)
@@ -22,17 +21,22 @@ function empirical_kl(X::AbstractMatrix, Y::AbstractMatrix; kwargs...)
 end
 
 function misclassification_probability(
-    rng::AbstractRNG, X_split::Vector{<:AbstractMatrix}; samples=100, kwargs...
+    X_split_train::Vector{<:AbstractMatrix},
+    X_split_test::Vector{<:AbstractMatrix};
+    kwargs...,
 )
-    X = stack(X_split; dims=1)
-    S = length.(X_split)
-    P = [kde(X; kwargs...) for X in X_split]
-    proba = 0.0
-    for _ in 1:samples
-        i = rand(1:size(X, 1))
-        x = Tuple(view(X, i, :))
-        likelihoods = [S[c] * pdf(P[c], x) for c in eachindex(P)]
-        c_max = argmax(likelihoods)
+    C = length(X_split_train)
+    P = [density_estimator(X_split_train[c]; kwargs...) for c in 1:C]
+    error_count = 0
+    for c in 1:C
+        for i in axes(X_split_test[c], 1)
+            x = Tuple(view(X_split_test[c], i, :))
+            likelihoods = [length(X_split_train[c]) * pdf(P[c], x...) for c in 1:C]
+            c_max = argmax(likelihoods)
+            if c_max != c
+                error_count += 1
+            end
+        end
     end
-    return proba
+    return error_count / sum(length, X_split_test)
 end

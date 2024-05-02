@@ -13,6 +13,7 @@ function embeddings(
     features::Vector{<:MultivariateDistribution};
     layers::Integer,
     resample_graph=false,
+    return_history=false,
 )
     X = stack(1:nb_vertices(graph); dims=1) do v
         c = community_of_vertex(graph, v)
@@ -22,14 +23,22 @@ function embeddings(
     D_plus_I = degree_matrix(A) + I
     H = copy(X)
     H_scratch = copy(H)
+    history = [copy(H)]
     for l in 1:layers
         if resample_graph
             A = rand(rng, graph)
             D_plus_I = degree_matrix(A) + I
         end
         convolution!(H, H_scratch, A, D_plus_I)
+        if return_history
+            push!(history, copy(H))
+        end
     end
-    return H
+    if return_history
+        return H, history
+    else
+        return H
+    end
 end
 
 function split_by_community(H::AbstractMatrix, graph::AbstractRandomGraph)
