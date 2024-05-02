@@ -2,20 +2,21 @@ function density_estimator(X::AbstractMatrix; kwargs...)
     if size(X, 2) == 1
         return kde(X[:, 1]; kwargs...)
     elseif size(X, 2) == 2
-        return kde((X[:, 1], X[:, 2]); kwargs...)
+        return kde(X; kwargs...)
     end
 end
 
-function empirical_kl(
-    rng::AbstractRNG, X::AbstractMatrix, Y::AbstractMatrix; samples=100, kwargs...
-)
-    P = density_estimator(X, kwargs...)
-    Q = density_estimator(Y, kwargs...)
+function empirical_kl(X::AbstractMatrix, Y::AbstractMatrix; kwargs...)
+    P = density_estimator(X; kwargs...)
+    Q = density_estimator(Y; kwargs...)
     kl = 0.0
-    for _ in 1:samples
-        i = rand(1:size(X, 1))
-        x = Tuple(view(X, i, :))
-        kl += pdf(P, x...) * log(pdf(Q, x...) / pdf(P, x...))
+    for row in eachrow(X)
+        x = Tuple(row)
+        Px = pdf(P, x...)
+        Qx = pdf(Q, x...)
+        if !iszero(Px)
+            kl += Px * log(Px / Qx)
+        end
     end
     return kl
 end

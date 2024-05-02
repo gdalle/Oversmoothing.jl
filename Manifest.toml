@@ -2,7 +2,7 @@
 
 julia_version = "1.10.3"
 manifest_format = "2.0"
-project_hash = "c7514e357cf726ff9d145990e71a1d630bbc6bbd"
+project_hash = "ccdf3d1d2808e4df531095aa78b01afa87100130"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -887,6 +887,16 @@ version = "0.3.27"
     ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
     ChangesOfVariables = "9e997f8a-9a97-42d5-a9f1-ce6bfc15e2c0"
     InverseFunctions = "3587e190-3f89-42d0-90ee-14403ec27112"
+
+[[deps.LogarithmicNumbers]]
+deps = ["Random"]
+git-tree-sha1 = "427421c277f82c5749002c1b23cb1aac91beb0a8"
+uuid = "aa2f6b4e-9042-5d33-9679-40d3a6b85899"
+version = "1.4.0"
+weakdeps = ["ForwardDiff"]
+
+    [deps.LogarithmicNumbers.extensions]
+    LogarithmicNumbersForwardDiffExt = "ForwardDiff"
 
 [[deps.Logging]]
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"

@@ -4,7 +4,7 @@ using JET
 using Oversmoothing
 using Test
 
-@testset "Oversmoothing.jl" begin
+@testset verbose = true "Oversmoothing.jl" begin
     @testset "Aqua" begin
         Aqua.test_all(Oversmoothing; ambiguities=false, deps_compat=false)
     end
