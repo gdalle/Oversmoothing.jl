@@ -110,7 +110,7 @@ function plot_misclassification(
     )
 
     fig = Figure()
-    ax = Axis(fig[1, 1]; xlabel="layers", ylabel="misclassification error")
+    ax = Axis(fig[1, 1]; xlabel="layers", ylabel="misclassification probability")
     scatterlines!(
         ax,
         0:(length(probas_no_resample) - 1),
