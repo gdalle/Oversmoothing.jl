@@ -2,6 +2,7 @@ module Oversmoothing
 
 using Base.Threads: @threads, nthreads
 using BlockArrays: Block, BlockArray, undef_blocks
+using CairoMakie: CairoMakie
 using DensityInterface: DensityInterface, IsDensity, densityof, logdensityof
 using Distributions: MultivariateDistribution, pdf
 using KernelDensity: kde
@@ -11,6 +12,7 @@ using LogExpFunctions: logsumexp
 using OhMyThreads: tmap, tforeach
 using Random: Random, AbstractRNG, default_rng, rand!, randn!, randsubseq
 using SparseArrays: SparseMatrixCSC, nonzeros, nnz, sparse, sprand
+using StableRNGs: StableRNG
 using Statistics: Statistics, mean, var
 using StatsBase: StatsBase, sample
 using StatsFuns: binompdf, log2π, normpdf, normlogpdf
@@ -26,6 +28,7 @@ export AbstractRandomGraph
 export Mixture
 export bernoulli_matrix
 export ErdosRenyi, ER, StochasticBlockModel, SBM
+export community_size, community_range, community_of_vertex
 export embeddings, split_by_community
 export empirical_kl
 

@@ -10,10 +10,7 @@ function plot_1d_embeddings(H_samples, graph; kwargs...)
 
     fig = Figure()
 
-    ax0 = Axis(
-        fig[1, 1];
-        title="Embedding distribution of a GNN on the CSBM",
-    )
+    ax0 = Axis(fig[1, 1]; title="Embedding distribution of a GNN on the CSBM")
     hist!(
         ax0,
         reduce(vcat, H_samples_by_community);

@@ -18,17 +18,15 @@ B = bernoulli_matrix(rng, M, N, q);
 
 er = ER(N, q)
 A = rand(rng, er)
-@test length(er) == N
 @test community_size(er, 1) == N
-@test get_community.(Ref(er), 1:N) == fill(1, N)
+@test community_of_vertex.(Ref(er), 1:N) == fill(1, N)
 @test A isa Symmetric
 @test mean(A) ≈ q atol = 1e-1
 
 sbm = SBM([N, 2N], Q)
 A = rand(rng, sbm)
-@test length(sbm) == 3N
 @test community_size.(Ref(sbm), 1:2) == [N, 2N]
-@test get_community.(Ref(sbm), 1:(3N)) == vcat(fill(1, N), fill(2, 2N))
+@test community_of_vertex.(Ref(sbm), 1:(3N)) == vcat(fill(1, N), fill(2, 2N))
 @test A isa Symmetric
 @test mean(view(A, 1:N, 1:N)) ≈ Q[1, 1] rtol = 1e-1
 @test mean(view(A, 1:N, N:(3N))) ≈ Q[1, 2] rtol = 1e-1

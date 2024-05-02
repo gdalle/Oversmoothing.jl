@@ -7,7 +7,7 @@ const ER = ErdosRenyi
 
 nb_vertices(er::ER) = er.N
 nb_communities(er::ER) = 1
-community_range(er::ER, c::Integer) = 1:length(er)
+community_range(er::ER, c::Integer) = 1:(er.N)
 
 function Random.rand(rng::AbstractRNG, er::ER)
     A = bernoulli_matrix(rng, er.N, er.N, er.q)
