@@ -100,33 +100,67 @@ function plot_misclassification(
     graph::AbstractRandomGraph,
     features::Vector{<:MultivariateDistribution};
     max_layers::Integer,
+    graph_samples::Integer,
 )
-    probas_no_resample = misclassification_probability_evolution(
-        rng, graph, features; max_layers, resample_graph=false
-    )
+    prog = Progress(2 * graph_samples; desc="Sampling:")
 
-    probas_resample = misclassification_probability_evolution(
-        rng, graph, features; max_layers, resample_graph=true
-    )
+    probas_no_resample = Vector{Vector{Float64}}(undef, graph_samples)
+    probas_resample = Vector{Vector{Float64}}(undef, graph_samples)
+
+    @threads for s in 1:graph_samples
+        probas_no_resample[s] = misclassification_probability_evolution(
+            rng, graph, features; max_layers, resample_graph=false
+        )
+        next!(prog)
+        probas_resample[s] = misclassification_probability_evolution(
+            rng, graph, features; max_layers, resample_graph=false
+        )
+        next!(prog)
+    end
+
+    probas_no_resample_mean = mean(probas_no_resample)
+    probas_no_resample_std = std(probas_no_resample)
+
+    probas_resample_mean = mean(probas_resample)
+    probas_resample_std = std(probas_resample)
 
     fig = Figure()
-    ax = Axis(fig[1, 1]; xlabel="layers", ylabel="misclassification probability")
+
+    ax = Axis(
+        fig[1, 1];
+        xlabel="layers",
+        ylabel="misclassification probability",
+        title="$graph",
+        xticks=0:max_layers,
+    )
+
     scatterlines!(
         ax,
-        0:(length(probas_no_resample) - 1),
-        probas_no_resample;
+        (0:max_layers) .- 0.1,
+        probas_no_resample_mean;
         label="no resampling",
         linestyle=:dash,
         marker=:diamond,
+        markersize=15,
     )
+    errorbars!(
+        ax,
+        (0:max_layers) .- 0.1,
+        probas_no_resample_mean,
+        probas_no_resample_std;
+    )
+
     scatterlines!(
         ax,
-        0:(length(probas_resample) - 1),
-        probas_resample;
+        (0:max_layers) .+ 0.1,
+        probas_resample_mean;
         label="resampling",
         linestyle=nothing,
         marker=:circle,
+        markersize=15,
     )
+    errorbars!(ax, (0:max_layers) .+ 0.1, probas_resample_mean, probas_resample_std;)
+
     axislegend(ax; position=:lt)
     return fig
 end

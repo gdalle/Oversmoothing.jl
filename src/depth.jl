@@ -5,11 +5,12 @@ function misclassification_probability_evolution(
     max_layers::Integer,
     resample_graph::Bool,
 )
-    dataset = tmap(1:2) do _
-        embeddings(rng, graph, features; layers=max_layers, resample_graph, return_history=true)
-    end
-    _, history_train = dataset[1]
-    _, history_test = dataset[2]
+    _, history_train = embeddings(
+        rng, graph, features; layers=max_layers, resample_graph, return_history=true
+    )
+    _, history_test = embeddings(
+        rng, graph, features; layers=max_layers, resample_graph, return_history=true
+    )
 
     probas = Vector{Float64}(undef, length(history_train))
     tforeach(eachindex(history_train, history_test)) do l

@@ -13,8 +13,8 @@ graph = SBM(
     [300, 500, 200],
     [
         0.05 0.01 0.01
-        0.01 0.05 0.01
-        0.01 0.01 0.05
+        0.01 0.04 0.01
+        0.01 0.01 0.03
     ],
 )
 
@@ -28,4 +28,4 @@ H = @time embeddings(rng, graph, features; layers=0, resample_graph=true);
 H_split = split_by_community(H, graph)
 plot_1d_embeddings(H_split)
 
-@profview plot_misclassification(rng, graph, features; max_layers=7)
+plot_misclassification(rng, graph, features; max_layers=7, graph_samples=20)

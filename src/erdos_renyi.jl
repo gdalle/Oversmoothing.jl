@@ -1,24 +1,18 @@
-@kwdef struct ErdosRenyi{T<:Real} <: AbstractRandomGraph
+struct ErdosRenyi{T<:Real} <: AbstractRandomGraph
     N::Int
     q::T
 end
 
 const ER = ErdosRenyi
 
+Base.show(io::IO, er::ER) = print(io, "ErdosRenyi($(er.N), $(er.q))")
+
 nb_vertices(er::ER) = er.N
 nb_communities(er::ER) = 1
 community_range(er::ER, c::Integer) = 1:(er.N)
 
 function Random.rand(rng::AbstractRNG, er::ER)
-    A = bernoulli_matrix(rng, er.N, er.N, er.q)
+    A = sprand(rng, Bool, er.N, er.N, er.q)
     A .-= Diagonal(A)
     return Symmetric(A)
-end
-
-function bernoulli_matrix(rng::AbstractRNG, m::Integer, n::Integer, q::Real)
-    selection = randsubseq(rng, 1:(m * n), q)
-    is = mod1.(selection, m)
-    js = fld1.(selection, m)
-    vs = ones(Bool, length(selection))
-    return sparse(is, js, vs, m, n)
 end
