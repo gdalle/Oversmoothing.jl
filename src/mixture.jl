@@ -1,6 +1,6 @@
-@kwdef struct Mixture{D,T}
-    components::Vector{D}
-    weights::T
+struct Mixture{C,W}
+    components::Vector{C}
+    weights::Vector{W}
 end
 
 function Base.show(io::IO, mix::Mixture{D}) where {D}
@@ -24,10 +24,11 @@ function squared_mean(m)
     return μ * transpose(μ)
 end
 
-function Statistics.var(mix::Mixture)
+function Statistics.cov(mix::Mixture)
     c, w = components(mix), weights(mix)
-    second_moment = sum(w[i] * (var(c[i]) + squared_mean(c[i])) for i in eachindex(c, w))
-    return second_moment - squared_mean(mix)
+    second_moment = sum(w[i] * (cov(c[i]) + squared_mean(c[i])) for i in eachindex(c, w))
+    Σ = second_moment - squared_mean(mix)
+    return Σ
 end
 
 function DensityInterface.logdensityof(mix::Mixture, x)

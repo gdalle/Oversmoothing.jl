@@ -143,12 +143,7 @@ function plot_misclassification(
         marker=:diamond,
         markersize=15,
     )
-    errorbars!(
-        ax,
-        (0:max_layers) .- 0.1,
-        probas_no_resample_mean,
-        probas_no_resample_std;
-    )
+    errorbars!(ax, (0:max_layers) .- 0.1, probas_no_resample_mean, probas_no_resample_std;)
 
     scatterlines!(
         ax,
