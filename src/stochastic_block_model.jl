@@ -10,6 +10,15 @@ struct StochasticBlockModel{C,T<:Real} <: AbstractRandomGraph
     end
 end
 
+function StochasticBlockModel(N::Integer, C::Integer, p_in::Real, p_out::Real)
+    S = fill(N ÷ C, C)
+    Q = fill(p_out, C, C)
+    for c in 1:C
+        Q[c, c] = p_in
+    end
+    return StochasticBlockModel(S, Q)
+end
+
 const SBM = StochasticBlockModel
 
 Base.show(io::IO, sbm::SBM{C}) where {C} = print(io, "SBM{$C}($(sbm.S), $(sbm.Q))")

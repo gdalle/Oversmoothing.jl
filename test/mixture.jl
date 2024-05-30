@@ -1,5 +1,5 @@
-using Distributions
 using DensityInterface
+using Distributions
 using LinearAlgebra
 using Oversmoothing
 using StableRNGs

@@ -1,5 +1,5 @@
 using Pkg
-Pkg.activate(dirname(@__DIR__))
+Pkg.activate(@__DIR__)
 
 using Distributions
 using Oversmoothing

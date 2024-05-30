@@ -1,6 +1,7 @@
 using Pkg
-Pkg.activate(dirname(@__DIR__))
+Pkg.activate(@__DIR__)
 
+using CairoMakie
 using Distributions
 using LinearAlgebra
 using Oversmoothing

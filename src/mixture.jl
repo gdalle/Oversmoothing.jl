@@ -3,6 +3,8 @@ struct Mixture{C,W}
     weights::Vector{W}
 end
 
+@inline DensityInterface.DensityKind(::Mixture) = DensityInterface.HasDensity()
+
 function Base.show(io::IO, mix::Mixture{D}) where {D}
     return print(io, "Mixture of $(length(mix.components)) $D")
 end

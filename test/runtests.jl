@@ -9,7 +9,7 @@ using Test
         Aqua.test_all(Oversmoothing; ambiguities=false, deps_compat=false)
     end
     @testset "JuliaFormatter" begin
-        @test JuliaFormatter.format(Oversmoothing, overwrite=false)
+        @test JuliaFormatter.format(Oversmoothing, overwrite=true)
     end
     @testset "JET" begin
         JET.test_package(Oversmoothing; target_defined_modules=true)
