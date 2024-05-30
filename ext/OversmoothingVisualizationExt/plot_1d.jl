@@ -1,41 +1,34 @@
-function Oversmoothing.plot_1d_embeddings(H_split::Vector{<:AbstractMatrix})
-    linestyles = [:dash, :dashdot, :dashdotdot]
-    C = length(H_split)
-    H = reduce(vcat, H_split)
-    H_range = range(minimum(H[:, 1]), maximum(H[:, 1]); length=100)
-
-    fig = Figure()
-
-    ax0 = Axis(fig[1, 1]; title="Embedding distribution of a GCN on the CSBM")
-    h0 = hist!(
-        ax0, H[:, 1]; normalization=:pdf, color=(:black, 0.5), label="all communities"
-    )
-    P = density_estimator(H)
-    l0 = lines!(ax0, H_range, pdf.(Ref(P), H_range); color=:black, linewidth=2)
-
-    Legend(fig[1, 2], [[h0, l0]], ["all communities"])
-
-    ax = Axis(fig[2, 1])
-    linkxaxes!(ax, ax0)
-
-    legend_objects = []
-    legend_names = []
-
+function Oversmoothing.plot_1d_embeddings!(
+    ax::Axis, graph::AbstractRandomGraph, H::AbstractArray
+)
+    C = nb_communities(graph)
+    H_split = split_by_community(H, graph)
     for c in 1:C
-        hc = hist!(ax, H_split[c][:, 1]; normalization=:pdf)
-        push!(legend_objects, hc)
-        push!(legend_names, "community $c (size $(length(H_split[c])))")
-    end
-
-    for c in 1:C
-        Pc = density_estimator(H_split[c])
-        lc = lines!(
-            ax, H_range, pdf.(Ref(Pc), H_range); linewidth=2, linestyle=linestyles[c]
+        hist!(
+            ax,
+            vec(H_split[c]);
+            normalization=:pdf,
+            label="community $c (size $(community_size(graph, c)))",
+            bins=50,
         )
-
-        legend_objects[c] = [legend_objects[c], lc]
     end
+    axislegend(ax)
+    return ax
+end
 
-    Legend(fig[2, 2], legend_objects, legend_names)
-    return fig
+function Oversmoothing.plot_1d_densities!(
+    ax::Axis, graph::AbstractRandomGraph, π::NTuple{C,<:Mixture}; xmin=-1, xmax=1
+) where {C}
+    xrange = range(xmin, xmax, 100)
+    for c in 1:C
+        density_vals = [densityof(π[c], [x]) for x in xrange]
+        lines!(
+            ax,
+            xrange,
+            density_vals;
+            label="community $c (size $(community_size(graph, c)))",
+        )
+    end
+    axislegend(ax)
+    return ax
 end

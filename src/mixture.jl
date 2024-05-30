@@ -33,6 +33,11 @@ function Statistics.cov(mix::Mixture)
     return Σ
 end
 
+function DensityInterface.densityof(mix::Mixture, x)
+    c, w = components(mix), weights(mix)
+    return sum(w[i] * densityof(c[i], x) for i in eachindex(c, w))
+end
+
 function DensityInterface.logdensityof(mix::Mixture, x)
     c, w = components(mix), weights(mix)
     return logsumexp(log(w[i]) + logdensityof(c[i], x) for i in eachindex(c, w))

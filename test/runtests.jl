@@ -5,14 +5,16 @@ using Oversmoothing
 using Test
 
 @testset verbose = true "Oversmoothing.jl" begin
-    @testset "Aqua" begin
-        Aqua.test_all(Oversmoothing; ambiguities=false, deps_compat=false)
-    end
-    @testset "JuliaFormatter" begin
-        @test JuliaFormatter.format(Oversmoothing, overwrite=true)
-    end
-    @testset "JET" begin
-        JET.test_package(Oversmoothing; target_defined_modules=true)
+    @testset "Formalities" begin
+        @testset "Aqua" begin
+            Aqua.test_all(Oversmoothing; ambiguities=false, deps_compat=false)
+        end
+        @testset "JuliaFormatter" begin
+            @test JuliaFormatter.format(Oversmoothing, overwrite=true)
+        end
+        @testset "JET" begin
+            JET.test_package(Oversmoothing; target_defined_modules=true)
+        end
     end
     @testset "Graphs" begin
         include("graphs.jl")

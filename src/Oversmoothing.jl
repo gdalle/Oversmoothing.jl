@@ -17,6 +17,7 @@ using Distributions: Binomial, MultivariateDistribution, MvNormal, logpdf, pdf
 using KernelDensity: kde
 using LogarithmicNumbers: LogFloat64, Logarithmic
 using LogExpFunctions: logsumexp
+using OffsetArrays: Origin
 using OhMyThreads: tmap, tforeach
 using ProgressMeter: Progress, next!
 using StatsBase: StatsBase, sample
@@ -34,9 +35,8 @@ include("kde.jl")
 
 ## function stubs for extensions
 
-function plot_1d_embeddings end
-function plot_2d_embeddings end
-function plot_misclassification end
+function plot_1d_embeddings! end
+function plot_1d_densities! end
 
 ## exports
 
@@ -47,7 +47,8 @@ export community_size, community_range, community_of_vertex
 export embeddings, split_by_community
 export state_evolution
 export density_estimator, empirical_kl, misclassification_probability
-export plot_1d_embeddings, plot_2d_embeddings
-export plot_misclassification
+
+export plot_1d_embeddings!
+export plot_1d_densities!
 
 end # module Oversmoothing
