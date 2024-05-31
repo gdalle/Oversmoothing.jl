@@ -46,11 +46,11 @@ function state_evolution(
             for n₂₁ in 0:n₂₁_max, n₂₂ in 0:n₂₂_max
         ])
         Σ₁ˡ_comp = Origin(0, 0)([  #
-            ((n₁₁ + 1) * Σ₁ˡ⁻¹ + n₁₂ * Σ₂ˡ⁻¹) / abs2((n₁₁ + 1) + n₁₂)  #
+            ((n₁₁ + 1)^2 * Σ₁ˡ⁻¹ + n₁₂^2 * Σ₂ˡ⁻¹) / ((n₁₁ + 1) + n₁₂)^2  #
             for n₁₁ in 0:n₁₁_max, n₁₂ in 0:n₁₂_max
         ])
         Σ₂ˡ_comp = Origin(0, 0)([  #
-            (n₂₁ * Σ₁ˡ⁻¹ + (n₂₂ + 1) * Σ₂ˡ⁻¹) / abs2(n₂₁ + (n₂₂ + 1))  #
+            (n₂₁^2 * Σ₁ˡ⁻¹ + (n₂₂ + 1)^2 * Σ₂ˡ⁻¹) / (n₂₁ + (n₂₂ + 1))^2  #
             for n₂₁ in 0:n₂₁_max, n₂₂ in 0:n₂₂_max
         ])
         π₁ˡ_comp = Origin(0, 0)([  #
