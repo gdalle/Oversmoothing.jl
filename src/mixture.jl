@@ -1,6 +1,6 @@
-struct Mixture{C,W}
-    components::Vector{C}
-    weights::Vector{W}
+struct Mixture{N,C<:AbstractArray{<:Any,N},W<:AbstractArray{<:Real,N}}
+    components::C
+    weights::W
 end
 
 @inline DensityInterface.DensityKind(::Mixture) = DensityInterface.HasDensity()

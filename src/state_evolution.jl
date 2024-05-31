@@ -1,26 +1,4 @@
 function state_evolution(
-    er::ER,
-    features::Vector{<:MultivariateDistribution};
-    nb_layers::Integer,
-    max_neighbors=nb_vertices(er),
-)
-    (; N, q) = er
-    π₁⁰ = Mixture([only(features)], [1.0])
-    π = [(π₁⁰,)]
-    for l in 2:(nb_layers + 1)
-        μ₁ˡ⁻¹ = mean(π[l - 1][1])
-        Σ₁ˡ⁻¹ = cov(π[l - 1][1])
-        μ₁ˡ_comp = [μ₁ˡ⁻¹ for n in 1:max_neighbors]
-        Σ₁ˡ_comp = [((n + 1) / (n + 1)^2) * Σ₁ˡ⁻¹ for n in 1:max_neighbors]
-        π₁ˡ_comp = [MvNormal(μ₁ˡ_comp[n], Σ₁ˡ_comp[n]) for n in 1:max_neighbors]
-        π₁ˡ_weights = [pdf(Binomial(N, q), n) for n in 1:max_neighbors]
-        π₁ˡ = Mixture(π₁ˡ_comp, π₁ˡ_weights)
-        push!(π, (π₁ˡ,))
-    end
-    return π
-end
-
-function state_evolution(
     sbm::SBM{2},
     features::Vector{<:MultivariateDistribution};
     nb_layers::Integer,
@@ -33,7 +11,7 @@ function state_evolution(
     n₁₂_max = n₂₂_max = min(N₂, max_neighbors)
     π₁⁰ = Mixture([features[1]], [1.0])
     π₂⁰ = Mixture([features[2]], [1.0])
-    π = Origin(0)([(π₁⁰, π₂⁰)])
+    π = Origin(0)(Any[(π₁⁰, π₂⁰)])
     for l in 1:nb_layers
         μ₁ˡ⁻¹, μ₂ˡ⁻¹ = mean(π[l - 1][1]), mean(π[l - 1][2])
         Σ₁ˡ⁻¹, Σ₂ˡ⁻¹ = cov(π[l - 1][1]), cov(π[l - 1][2])
@@ -46,11 +24,11 @@ function state_evolution(
             for n₂₁ in 0:n₂₁_max, n₂₂ in 0:n₂₂_max
         ])
         Σ₁ˡ_comp = Origin(0, 0)([  #
-            ((n₁₁ + 1)^2 * Σ₁ˡ⁻¹ + n₁₂^2 * Σ₂ˡ⁻¹) / ((n₁₁ + 1) + n₁₂)^2  #
+            ((n₁₁ + 1) * Σ₁ˡ⁻¹ + n₁₂ * Σ₂ˡ⁻¹) / ((n₁₁ + 1) + n₁₂)^2  #
             for n₁₁ in 0:n₁₁_max, n₁₂ in 0:n₁₂_max
         ])
         Σ₂ˡ_comp = Origin(0, 0)([  #
-            (n₂₁^2 * Σ₁ˡ⁻¹ + (n₂₂ + 1)^2 * Σ₂ˡ⁻¹) / (n₂₁ + (n₂₂ + 1))^2  #
+            (n₂₁ * Σ₁ˡ⁻¹ + (n₂₂ + 1) * Σ₂ˡ⁻¹) / (n₂₁ + (n₂₂ + 1))^2  #
             for n₂₁ in 0:n₂₁_max, n₂₂ in 0:n₂₂_max
         ])
         π₁ˡ_comp = Origin(0, 0)([  #
@@ -69,8 +47,8 @@ function state_evolution(
             pdf(Binomial(N₂, Q[2, 1]), n₂₁) * pdf(Binomial(N₂, Q[2, 2]), n₂₂)  #
             for n₂₁ in 0:n₂₁_max, n₂₂ in 0:n₂₂_max
         ])
-        π₁ˡ = Mixture(vec(π₁ˡ_comp), vec(π₁ˡ_weights))
-        π₂ˡ = Mixture(vec(π₂ˡ_comp), vec(π₂ˡ_weights))
+        π₁ˡ = Mixture(π₁ˡ_comp, π₁ˡ_weights)
+        π₂ˡ = Mixture(π₂ˡ_comp, π₂ˡ_weights)
         push!(π, (π₁ˡ, π₂ˡ))
     end
     return Origin(0)(π)

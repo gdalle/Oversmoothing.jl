@@ -2,7 +2,7 @@
 
 julia_version = "1.10.3"
 manifest_format = "2.0"
-project_hash = "672babfbea5e084972b07f40a940f4a97f3400d1"
+project_hash = "99a4ddfaf76b9ff43b1dc4865a23d02041238026"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -935,7 +935,7 @@ uuid = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 version = "1.6.3"
 
 [[deps.Oversmoothing]]
-deps = ["DensityInterface", "Distributions", "KernelDensity", "LinearAlgebra", "LogExpFunctions", "LogarithmicNumbers", "OhMyThreads", "ProgressMeter", "Random", "SparseArrays", "StaticArrays", "Statistics", "StatsBase", "StatsFuns"]
+deps = ["DensityInterface", "Distributions", "KernelDensity", "LinearAlgebra", "LogExpFunctions", "LogarithmicNumbers", "OffsetArrays", "OhMyThreads", "ProgressMeter", "Random", "SparseArrays", "StaticArrays", "Statistics", "StatsBase", "StatsFuns"]
 path = ".."
 uuid = "e897de12-cf97-4882-a166-76630c4a311e"
 version = "0.1.0"
@@ -1323,9 +1323,9 @@ uuid = "731e570b-9d59-4bfa-96dc-6df516fadf69"
 version = "0.10.0"
 
 [[deps.TranscodingStreams]]
-git-tree-sha1 = "5d54d076465da49d6746c647022f3b3674e64156"
+git-tree-sha1 = "a947ea21087caba0a798c5e494d0bb78e3a1a3a0"
 uuid = "3bb67fe8-82b1-5028-8e26-92a6c54297fa"
-version = "0.10.8"
+version = "0.10.9"
 weakdeps = ["Random", "Test"]
 
     [deps.TranscodingStreams.extensions]
