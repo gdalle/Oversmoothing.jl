@@ -9,7 +9,7 @@ function Oversmoothing.plot_1d_embeddings!(
             vec(H_split[c]);
             normalization=:pdf,
             label="community $c (size $(community_size(graph, c)))",
-            bins=50,
+            bins=100,
         )
     end
     # axislegend(ax)

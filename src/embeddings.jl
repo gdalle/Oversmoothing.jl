@@ -1,10 +1,10 @@
-degree_matrix(A) = Diagonal(Vector(map(sum, eachrow(A))))
+degree_matrix(A) = Diagonal(Vector(map(sum, eachcol(A))))
 
-function convolution!(X, X_scratch, A, D_plus_I)
+function convolution!(X, X_scratch, A, D)
     mul!(X_scratch, A, X)
     X_scratch .+= X
-    ldiv!(D_plus_I, X_scratch)
-    return copyto!(X, X_scratch)
+    ldiv!(X, D, X_scratch)
+    return nothing
 end
 
 function single_graph_embeddings(
@@ -19,16 +19,16 @@ function single_graph_embeddings(
         rand(rng, features[c])
     end
     A = rand(rng, graph)
-    D_plus_I = degree_matrix(A) + I
+    D = degree_matrix(A) + I
     H = copy(X)
     H_scratch = copy(H)
     H_history = Origin(0)([copy(H)])
     for l in 1:nb_layers
         if resample_graph
             A = rand(rng, graph)
-            D_plus_I = degree_matrix(A) + I
+            D = degree_matrix(A) + I
         end
-        convolution!(H, H_scratch, A, D_plus_I)
+        convolution!(H, H_scratch, A, D)
         push!(H_history, copy(H))
     end
     return H_history

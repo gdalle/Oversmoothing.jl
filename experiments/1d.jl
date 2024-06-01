@@ -22,7 +22,7 @@ function plot_emb_dens(graph, emb, dens; layer)
     return fig
 end
 
-graph = SBM(200, 2, 0.2, 0.1)
+graph = SBM(1000, 2, 0.01, 0.002)
 
 features = [
     MvNormal(SVector(-2.0), SMatrix{1,1}(+0.01)),  #
@@ -33,7 +33,7 @@ nb_layers = 10
 emb_history = @time embeddings(
     rng, graph, features; nb_layers, resample_graph=true, nb_graphs=100
 );
-dens_history = @time state_evolution(graph, features; nb_layers);
+dens_history = @time state_evolution(graph, features; nb_layers, max_neighbors=100);
 
-layer = 3
+layer = 2
 plot_emb_dens(graph, emb_history[layer], dens_history[layer]; layer)
