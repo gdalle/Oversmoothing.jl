@@ -54,6 +54,7 @@ function kl_empirical(
     x = rand(rng, f, nb_samples)
     log_fx = logpdf(f, x)
     log_gx = logpdf(g, x)
-    kl = mean(log_fx .- log_gx)
-    return kl
+    kl_mean = mean(log_fx .- log_gx)
+    kl_std = std(log_fx .- log_gx)
+    return kl_mean, kl_std
 end
