@@ -1,4 +1,4 @@
-struct StochasticBlockModel{C,T<:Real} <: AbstractRandomGraph
+struct StochasticBlockModel{C,T<:Real}
     S::Vector{Int}
     Q::Matrix{T}
 
@@ -25,6 +25,7 @@ Base.show(io::IO, sbm::SBM{C}) where {C} = print(io, "SBM{$C}($(sbm.S), $(sbm.Q)
 
 nb_vertices(sbm::SBM) = sum(sbm.S)
 nb_communities(::SBM{C}) where {C} = C
+community_size(sbm::SBM, c::Integer) = sbm.S[c]
 
 function community_range(sbm::SBM, c::Integer)
     (; S) = sbm
@@ -33,9 +34,22 @@ function community_range(sbm::SBM, c::Integer)
     return (i + 1):j
 end
 
+function community_of_vertex(sbm::SBM, v::Integer)
+    for c in 1:nb_communities(sbm)
+        if v in community_range(sbm, c)
+            return c
+        end
+    end
+    return 0
+end
+
 function Random.rand(rng::AbstractRNG, sbm::SBM{1})
     (; S, Q) = sbm
-    return rand(rng, ErdosRenyi(only(S), only(Q)))
+    N = only(S)
+    q = only(Q)
+    A = sprand(rng, Bool, N, N, q)
+    A .-= Diagonal(A)
+    return Symmetric(A, :U)
 end
 
 function Random.rand(rng::AbstractRNG, sbm::SBM{2})

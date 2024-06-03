@@ -10,8 +10,7 @@ using OhMyThreads
 using Oversmoothing
 using Oversmoothing: community_size, nb_communities, split_by_community
 
-include("plot_1d.jl")
-# include("plot_2d.jl")
+# include("plot_1d.jl")
 # include("errors.jl")
 
 end

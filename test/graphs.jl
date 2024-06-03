@@ -8,19 +8,10 @@ rng = StableRNG(63)
 
 N = 1000
 M = 2000
-q = 0.05
 Q = [0.05 0.01; 0.01 0.03]
 
-er = ER(N, q)
-A = rand(rng, er)
-@test community_size(er, 1) == N
-@test community_of_vertex.(Ref(er), 1:N) == fill(1, N)
-@test issymmetric(A)
-@test all(iszero, Diagonal(A))
-@test mean(A) ≈ q atol = 1e-1
-
 sbm = SBM([N, 2N], Q)
-A = rand(rng, sbm)
+A = rand(rng, sbm);
 @test community_size.(Ref(sbm), 1:2) == [N, 2N]
 @test community_of_vertex.(Ref(sbm), 1:(3N)) == vcat(fill(1, N), fill(2, 2N))
 @test issymmetric(A)

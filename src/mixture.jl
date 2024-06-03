@@ -1,4 +1,4 @@
-struct Mixture{N,C<:AbstractArray{<:Any,N},W<:AbstractArray{<:Real,N}}
+struct Mixture{D,N,C<:AbstractArray{D,N},W<:AbstractArray{<:Real,N}}
     components::C
     weights::W
 end
@@ -35,7 +35,7 @@ end
 
 function DensityInterface.densityof(mix::Mixture, x)
     c, w = components(mix), weights(mix)
-    return sum(w[i] * densityof(c[i], x) for i in eachindex(c, w) if i > 1)
+    return sum(w[i] * densityof(c[i], x) for i in eachindex(c, w))
 end
 
 function DensityInterface.logdensityof(mix::Mixture, x)

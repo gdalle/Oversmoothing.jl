@@ -13,11 +13,11 @@ using SparseArrays
 ## other deps
 
 using DensityInterface: DensityInterface, densityof, logdensityof
-using Distributions: Binomial, MultivariateDistribution, MvNormal, logpdf, pdf
+using Distributions: Binomial, MultivariateDistribution, MvNormal, kldivergence, logpdf, pdf
 using KernelDensity: kde
 using LogarithmicNumbers: LogFloat64, Logarithmic
 using LogExpFunctions: logsumexp
-using OffsetArrays: Origin
+using OffsetArrays: OffsetArray, OffsetMatrix, OffsetVector, Origin
 using OhMyThreads: tmap, tforeach
 using ProgressMeter: Progress, next!
 using StatsBase: StatsBase, sample
@@ -25,11 +25,9 @@ using StatsFuns: binompdf, log2π, normpdf, normlogpdf
 
 ## includes
 
-include("mixture.jl")
-include("random_graph.jl")
-include("erdos_renyi.jl")
 include("stochastic_block_model.jl")
 include("embeddings.jl")
+include("mixture.jl")
 include("state_evolution.jl")
 include("kde.jl")
 
@@ -42,8 +40,8 @@ function plot_1d_densities! end
 
 export AbstractRandomGraph
 export Mixture
-export ErdosRenyi, ER, StochasticBlockModel, SBM
-export community_size, community_range, community_of_vertex
+export StochasticBlockModel, SBM
+export community_size, community_range, community_of_vertex, nb_vertices, nb_communities
 export embeddings, split_by_community
 export state_evolution
 export density_estimator, empirical_kl, misclassification_probability
