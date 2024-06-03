@@ -25,18 +25,18 @@ end
 
 ## Instance
 
-sbm = SBM([300, 700], [0.03 0.002; 0.002 0.01])
+sbm = SBM([100, 200], [0.05 0.01; 0.01 0.03])
 
 features = (
     MvNormal([-1.0], [+0.01;;]),  #
-    MvNormal([+1.0], [+0.03;;]),  #
+    MvNormal([+1.0], [+0.01;;]),  #
 )
 
 ## Computation
 
 nb_layers = 8
 emb_history = @time embeddings(
-    rng, sbm, features; nb_layers, resample_graph=true, nb_graphs=10
+    rng, sbm, features; nb_layers, resample_graph=false, nb_graphs=100
 );
 dens_history = @time state_evolution(sbm, features; nb_layers, max_neighbors=100);
 
@@ -60,8 +60,6 @@ kl_ub = @time [
 =#
 
 ## Plotting
-
-plot_emb_dens(sbm, emb_history, dens_history)
 
 function plot_emb_dens(sbm, emb_history, dens_history)
     (; S, Q) = sbm
@@ -102,7 +100,7 @@ N = $S       Q = $Q
         lines!(ax2, xrange, obs_dens_vals_split[c];)
     end
 
-    record(fig, joinpath(@__DIR__, "oversmoothing.gif"), 0:nb_layers; framerate=2) do layer
+    record(fig, joinpath(@__DIR__, "oversmoothing.gif"), 0:nb_layers; framerate=1) do layer
         @info "Plotting layer $layer/$nb_layers"
         emb = emb_history[:, layer + 1, :, :]
         dens = dens_history[layer + 1, :]
@@ -117,3 +115,5 @@ N = $S       Q = $Q
         obs_limits[] = (nothing, (0.0, dens_max))
     end
 end
+
+plot_emb_dens(sbm, emb_history, dens_history)

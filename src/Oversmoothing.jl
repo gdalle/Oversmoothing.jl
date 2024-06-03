@@ -28,7 +28,6 @@ using Distributions:
     logpdf,
     pdf,
     probs
-using KernelDensity: kde
 using LogarithmicNumbers: LogFloat64, Logarithmic
 using LogExpFunctions: logsumexp
 using OffsetArrays: OffsetArray, OffsetMatrix, OffsetVector, Origin
@@ -42,14 +41,12 @@ include("embeddings.jl")
 include("mixture.jl")
 include("state_evolution.jl")
 include("kullback_leibler.jl")
-# include("kde.jl")
 
 ## exports
 
 export StochasticBlockModel, SBM
 export community_size, community_range, community_of_vertex, nb_vertices, nb_communities
 export embeddings, split_by_community
-export Mixture
 export state_evolution
 export kl_lowerbound, kl_upperbound, kl_approx, kl_empirical
 
