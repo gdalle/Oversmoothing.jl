@@ -16,13 +16,16 @@ using Test
             JET.test_package(Oversmoothing; target_defined_modules=true)
         end
     end
-    @testset "Graphs" begin
-        include("graphs.jl")
+    @testset "Stochastic Block Model" begin
+        include("stochastic_block_model.jl")
     end
     @testset "Mixture" begin
         include("mixture.jl")
     end
     @testset "State evolution" begin
         include("state_evolution.jl")
+    end
+    @testset "Kullback-Leibler divergence" begin
+        include("kullback_leibler.jl")
     end
 end

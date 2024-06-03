@@ -12,14 +12,26 @@ using SparseArrays
 
 ## other deps
 
-using DensityInterface: DensityInterface, densityof, logdensityof
-using Distributions: Binomial, MultivariateDistribution, MvNormal, kldivergence, logpdf, pdf
+using Distributions:
+    Distributions,
+    Binomial,
+    Categorical,
+    Continuous,
+    MixtureModel,
+    Multivariate,
+    MultivariateDistribution,
+    MvNormal,
+    component,
+    components,
+    _cov,
+    entropy,
+    logpdf,
+    pdf,
+    probs
 using KernelDensity: kde
 using LogarithmicNumbers: LogFloat64, Logarithmic
 using LogExpFunctions: logsumexp
 using OffsetArrays: OffsetArray, OffsetMatrix, OffsetVector, Origin
-using OhMyThreads: tmap, tforeach
-using ProgressMeter: Progress, next!
 using StatsBase: StatsBase, sample
 using StatsFuns: binompdf, log2π, normpdf, normlogpdf
 
@@ -29,24 +41,16 @@ include("stochastic_block_model.jl")
 include("embeddings.jl")
 include("mixture.jl")
 include("state_evolution.jl")
-include("kde.jl")
-
-## function stubs for extensions
-
-function plot_1d_embeddings! end
-function plot_1d_densities! end
+include("kullback_leibler.jl")
+# include("kde.jl")
 
 ## exports
 
-export AbstractRandomGraph
-export Mixture
 export StochasticBlockModel, SBM
 export community_size, community_range, community_of_vertex, nb_vertices, nb_communities
 export embeddings, split_by_community
+export Mixture
 export state_evolution
-export density_estimator, empirical_kl, misclassification_probability
-
-export plot_1d_embeddings!
-export plot_1d_densities!
+export kl_lowerbound, kl_upperbound, kl_approx, kl_empirical
 
 end # module Oversmoothing
