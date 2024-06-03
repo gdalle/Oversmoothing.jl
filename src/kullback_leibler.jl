@@ -1,22 +1,21 @@
 function kl(dist_f::MvNormal, dist_g::MvNormal)
     d = length(dist_f)
     μf, μg = mean(dist_f), mean(dist_g)
-    Σf, Σg = _cov(dist_f), _cov(dist_g)
-    twice_D = (
-        logdet(Σg) - logdet(Σf) + tr(inv(Σg) * Σf) + dot(μf - μg, inv(Σg), μf - μg) - d
-    )
-    return twice_D / 2
+    Σf, Σg = _cov(dist_f).mat, _cov(dist_g).mat
+    term1 = logdet(Σg) - logdet(Σf)
+    term2 = tr(Σg \ Σf)
+    term3 = dot(μf - μg, inv(Σg), μf - μg)
+    return (term1 + term2 + term3 - d) / 2
 end
 
 function log_prod_norm(dist_a::MvNormal, dist_b::MvNormal)
     d = length(dist_a)
     μa, μb = mean(dist_a), mean(dist_b)
     Σa, Σb = _cov(dist_a), _cov(dist_b)
-    twice_log_t = ( #
-        -d * log(2π) - logdet(Σa + Σb)  #
-        - dot(μb - μa, inv(Σa + Σb), μb - μa)
-    )
-    return twice_log_t / 2
+    term1 = -d * log(2π)
+    term2 = -logdet(Σa + Σb)
+    term3 = -dot(μb - μa, inv(Σa + Σb), μb - μa)
+    return (term1 + term2 + term3) / 2
 end
 
 prod_norm(ga::MvNormal, gb::MvNormal) = exp(log_prod_norm(ga, gb))
