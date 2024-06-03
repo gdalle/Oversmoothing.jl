@@ -66,32 +66,40 @@ function plot_emb_dens(sbm, emb_history, dens_history, kl_history)
     obs_dens_vals_split = [Observable([pdf(dens[c], [x]) for x in xrange]) for c in 1:C]
     dens_max = 1.05 * maximum(x -> maximum(x[]), obs_dens_vals_split)
     obs_limits = Observable((nothing, (0.0, dens_max)))
-    obs_kl_history = Observable([kl_history[1]])
+    obs_kl_points = Observable(Point2f[(0, kl_history[1])])
 
     fig = Figure()
     Label(
         fig[0, 1],
-        @lift("""
-Contextual SBM with 2 communities - $($obs_title)
+        """
+Contextual SBM with 2 communities 
 N = $S       Q = $Q
-""");
+""";
         tellwidth=false,
     )
     ax1 = Axis(
-        fig[1, 1]; title="Embedding histogram", limits=obs_limits
+        fig[1, 1]; title=@lift("Embedding histogram - $($obs_title)"), limits=obs_limits, ylabel="frequency"
     )
     ax2 = Axis(
         fig[2, 1];
-        title="Approximate embedding density",
+        title=@lift("Approximate embedding density - $($obs_title)"),
         limits=obs_limits,
+        ylabel="frequency",
     )
-    ax3 = Axis(fig[3, 1]; title="KL divergence between communities")
+    ax3 = Axis(
+        fig[3, 1];
+        title="Distance between communities",
+        limits=((-1, nb_layers + 1), nothing),
+        xlabel="layer",
+        ylabel="KL divergence",
+        yscale=log10,
+    )
     linkxaxes!(ax1, ax2)
     for c in 1:C
         hist!(ax1, obs_emb_split[c]; normalization=:pdf, bins=50)
         lines!(ax2, xrange, obs_dens_vals_split[c];)
     end
-    scatterlines!(ax3, obs_kl_history; color=:black)
+    scatterlines!(ax3, obs_kl_points; color=:black)
 
     record(fig, joinpath(@__DIR__, "oversmoothing.gif"), 0:nb_layers; framerate=1) do layer
         @info "Plotting layer $layer/$nb_layers"
@@ -106,7 +114,7 @@ N = $S       Q = $Q
         end
         dens_max = 1.05 * maximum(x -> maximum(x[]), obs_dens_vals_split)
         obs_limits[] = (nothing, (0.0, dens_max))
-        obs_kl_history[] = push!(obs_kl_history[], kl_history[layer+1])
+        obs_kl_points[] = push!(obs_kl_points[], Point2f(layer, kl_history[layer + 1]))
     end
 end
 
