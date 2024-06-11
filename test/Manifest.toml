@@ -1,8 +1,8 @@
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.10.3"
+julia_version = "1.10.4"
 manifest_format = "2.0"
-project_hash = "8289e9af102bb2a9970bd564d29a70de2b1275b9"
+project_hash = "dbdd0728ee424995e94c8fe8ed89a9e94efd3c4b"
 
 [[deps.AliasTables]]
 deps = ["PtrArrays", "Random"]

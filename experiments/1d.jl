@@ -2,7 +2,6 @@ using Pkg
 Pkg.activate(@__DIR__)
 
 using CairoMakie
-using Distributions
 using LinearAlgebra
 using Oversmoothing
 using Random: default_rng
@@ -12,24 +11,13 @@ using StaticArrays
 BLAS.set_num_threads(1)
 rng = default_rng()
 
-## Utils
-
-function make_static(g::MvNormal)
-    d = length(g)
-    return MvNormal(SVector{d}(mean(g)), SMatrix{d,d}(cov(g)))
-end
-
-function make_static(m::MixtureModel)
-    return MixtureModel(make_static.(m.components), m.prior)
-end
-
 ## Instance
 
 sbm = SBM([100, 200], [0.05 0.01; 0.01 0.05])
 
 features = (
-    MvNormal([-1.0], [+0.1;;]),  #
-    MvNormal([+1.0], [+0.2;;]),  #
+    MultivariateNormal(SVector(-1.0), SMatrix{1,1}(+0.1)),  #
+    MultivariateNormal(SVector(+1.0), SMatrix{1,1}(+0.2)),  #
 )
 
 ## Computation
@@ -38,15 +26,20 @@ nb_layers = 6
 emb_history = @time embeddings(
     rng, sbm, features; nb_layers, resample_graph=true, nb_graphs=100
 );
-dens_history = @time state_evolution(sbm, features; nb_layers, max_neighbors=100);
+dens_history = @time state_evolution(sbm, features; nb_layers, max_neighbors=50);
 
 static_dens_history = make_static.(dens_history)
 
 ## KL
 
-kl_history = @time [
-    kl_empirical(rng, static_dens_history[l, 1], static_dens_history[l, 2]; nb_samples=100)
-    for l in axes(static_dens_history, 1)
+kl_history = @profview [
+    kl_approx(static_dens_history[l, 1], static_dens_history[l, 2]) for
+    l in axes(static_dens_history, 1)[1:2]
+]
+
+kl_history = @profview [
+    kl_approx(dens_history[l, 1], dens_history[l, 2]) for
+    l in axes(static_dens_history, 1)[1:2]
 ]
 
 ## Plotting

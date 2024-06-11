@@ -16,16 +16,20 @@ using Test
             JET.test_package(Oversmoothing; target_defined_modules=true)
         end
     end
-    @testset "Stochastic Block Model" begin
-        include("stochastic_block_model.jl")
+
+    @testset "Normal" begin
+        include("normal.jl")
     end
     @testset "Mixture" begin
         include("mixture.jl")
     end
+    @testset "Mixture of Normal" begin
+        include("mixture_normal.jl")
+    end
+    @testset "Stochastic Block Model" begin
+        include("stochastic_block_model.jl")
+    end
     @testset "State evolution" begin
         include("state_evolution.jl")
-    end
-    @testset "Kullback-Leibler divergence" begin
-        include("kullback_leibler.jl")
     end
 end

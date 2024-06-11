@@ -10,7 +10,7 @@ end
 function embeddings(
     rng::AbstractRNG,
     sbm::StochasticBlockModel{C},
-    features::NTuple{C,<:MultivariateDistribution};
+    features::NTuple{C};
     nb_layers::Integer,
     nb_graphs::Integer=1,
     resample_graph=false,
