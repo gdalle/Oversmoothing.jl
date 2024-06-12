@@ -1,6 +1,12 @@
 struct Mixture{C,W}
     components::Vector{C}
     weights::Vector{W}
+
+    function Mixture(c::Vector{C}, w::Vector{W}) where {C,W}
+        @assert sum(w) ≈ one(W)
+        @assert length(c) == length(w)
+        return new{C,W}(c, w)
+    end
 end
 
 @inline DensityInterface.DensityKind(::Mixture) = DensityInterface.HasDensity()
