@@ -1,5 +1,6 @@
 [deps]
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
+DensityInterface = "b429d917-457f-4dbc-8f4c-0cc954292b1d"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Oversmoothing = "e897de12-cf97-4882-a166-76630c4a311e"
 StableRNGs = "860ef19b-820b-49d6-a774-d7a799459cd3"

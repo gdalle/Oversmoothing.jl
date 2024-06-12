@@ -2,6 +2,7 @@ using Pkg
 Pkg.activate(@__DIR__)
 
 using CairoMakie
+using DensityInterface
 using LinearAlgebra
 using Oversmoothing
 using Random: default_rng
@@ -13,7 +14,7 @@ rng = default_rng()
 
 ## Instance
 
-sbm = SBM([100, 200], [0.05 0.01; 0.01 0.05])
+sbm = SBM([100, 200], [0.03 0.01; 0.01 0.03])
 
 features = (
     MultivariateNormal(SVector(-1.0), SMatrix{1,1}(+0.1)),  #
@@ -28,28 +29,26 @@ emb_history = @time embeddings(
 );
 dens_history = @time state_evolution(sbm, features; nb_layers, max_neighbors=50);
 
-static_dens_history = make_static.(dens_history)
-
 ## KL
 
-kl_history = @profview [
-    kl_approx(static_dens_history[l, 1], static_dens_history[l, 2]) for
-    l in axes(static_dens_history, 1)[1:2]
+kl_lowerbound_history = [
+    kl_lowerbound(dens_history[l, 1], dens_history[l, 2]) for l in axes(dens_history, 1)
 ]
 
-kl_history = @profview [
-    kl_approx(dens_history[l, 1], dens_history[l, 2]) for
-    l in axes(static_dens_history, 1)[1:2]
+kl_upperbound_history = [
+    kl_upperbound(dens_history[l, 1], dens_history[l, 2]) for l in axes(dens_history, 1)
 ]
 
 ## Plotting
 
-function plot_emb_dens(sbm, emb_history, dens_history, kl_history)
+function plot_emb_dens(
+    sbm, emb_history, dens_history, kl_lowerbound_history, kl_upperbound_history
+)
+    kl_approx_history = (kl_lowerbound_history .+ kl_upperbound_history) ./ 2
+
     (; S, Q) = sbm
     nb_layers = size(dens_history, 1) - 1
     xrange = range(minimum(emb_history), maximum(emb_history), 200)
-    kl_mean_history = first.(kl_history)
-    kl_std_history = last.(kl_history)
 
     C = nb_communities(sbm)
     emb = emb_history[:, 1, :, :]
@@ -58,19 +57,17 @@ function plot_emb_dens(sbm, emb_history, dens_history, kl_history)
 
     obs_title = Observable("Layer 0/$nb_layers")
     obs_emb_split = [Observable(vec(emb_split[c])) for c in 1:C]
-    obs_dens_vals_split = [Observable([pdf(dens[c], [x]) for x in xrange]) for c in 1:C]
+    obs_dens_vals_split = [
+        Observable([densityof(dens[c], [x]) for x in xrange]) for c in 1:C
+    ]
     dens_max = 1.05 * maximum(x -> maximum(x[]), obs_dens_vals_split)
     obs_limits = Observable((nothing, (0.0, dens_max)))
-    obs_kl_mean_points = Observable(Point2f[(0, kl_mean_history[1])])
+    obs_kl_lowerbound_points = Observable(Point2f[(0, kl_lowerbound_history[1])])
+    obs_kl_upperbound_points = Observable(Point2f[(0, kl_upperbound_history[1])])
 
     fig = Figure()
     Label(
-        fig[0, 1],
-        """
-Contextual SBM with 2 communities 
-N = $S       Q = $Q
-""";
-        tellwidth=false,
+        fig[0, 1], "Contextual SBM with 2 communities\nN = $S       Q = $Q"; tellwidth=false
     )
     ax1 = Axis(
         fig[1, 1];
@@ -87,7 +84,6 @@ N = $S       Q = $Q
     ax3 = Axis(
         fig[3, 1];
         title="Distance between communities",
-        limits=((-1, nb_layers + 1), extrema(kl_mean_history)),
         xlabel="layer",
         ylabel="KL divergence",
     )
@@ -96,7 +92,8 @@ N = $S       Q = $Q
         hist!(ax1, obs_emb_split[c]; normalization=:pdf, bins=20)
         lines!(ax2, xrange, obs_dens_vals_split[c];)
     end
-    scatterlines!(ax3, obs_kl_mean_points; color=:black)
+    scatterlines!(ax3, obs_kl_lowerbound_points; color=:black)
+    scatterlines!(ax3, obs_kl_upperbound_points; color=:black, marker=:rect)
 
     record(fig, joinpath(@__DIR__, "oversmoothing.gif"), 0:nb_layers; framerate=1) do layer
         @info "Plotting layer $layer/$nb_layers"
@@ -107,14 +104,18 @@ N = $S       Q = $Q
         obs_title[] = "Layer $layer/$nb_layers"
         for c in 1:C
             obs_emb_split[c][] = vec(emb_split[c])
-            obs_dens_vals_split[c][] = pdf(dens[c], transpose(xrange))
+            obs_dens_vals_split[c][] = [densityof(dens[c], [x]) for x in xrange]
         end
         dens_max = 1.05 * maximum(x -> maximum(x[]), obs_dens_vals_split)
         obs_limits[] = (nothing, (0.0, dens_max))
-        obs_kl_mean_points[] = push!(
-            obs_kl_mean_points[], Point2f(layer, kl_mean_history[layer + 1])
+        obs_kl_lowerbound_points[] = push!(
+            obs_kl_lowerbound_points[], Point2f(layer, kl_lowerbound_history[layer + 1])
         )
+        obs_kl_upperbound_points[] = push!(
+            obs_kl_upperbound_points[], Point2f(layer, kl_upperbound_history[layer + 1])
+        )
+        autolimits!(ax3)
     end
 end
 
-plot_emb_dens(sbm, emb_history, dens_history, kl_history)
+plot_emb_dens(sbm, emb_history, dens_history, kl_lowerbound_history, kl_upperbound_history)
