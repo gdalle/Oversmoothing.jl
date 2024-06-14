@@ -10,14 +10,10 @@ function state_evolution(
     w = OffsetArray{Float64,3}(undef, 2, 0:N1, 0:N2)
     ww = OffsetArray{Float64,6}(undef, 2, 2, 0:N1, 0:N2, 0:N1, 0:N2)
     for c1 in 1:2, k11 in 0:N1, k12 in 0:N2
-        w[c1, k11, k12] = binompdf(N1, Q[c1, 1], k11) * binompdf(N2, Q[c1, 2], k12)
+        w[c1, k11, k12] = binompdf(N1_max, Q[c1, 1], k11) * binompdf(N2_max, Q[c1, 2], k12)
     end
     for c1 in 1:2, c2 in 1:2, k11 in 0:N1, k12 in 0:N2, k21 in 0:N1, k22 in 0:N2
-        ww[c1, c2, k11, k12, k21, k22] =
-            binompdf(N1, Q[c1, 1], k11) *
-            binompdf(N2, Q[c1, 2], k12) *
-            binompdf(N1, Q[c2, 1], k21) *
-            binompdf(N2, Q[c2, 2], k22)
+        ww[c1, c2, k11, k12, k21, k22] = w[c1, k11, k12] * w[c2, k21, k22]
     end
 
     μ0 = mean.(features)
@@ -61,16 +57,27 @@ function state_evolution(
         # components
         for c1 in 1:2, k11 in 0:N1, k12 in 0:N2
             μ[l, c1, k11, k12] =
-                (k11 * μ_agg[l - 1, 1] + k12 * μ_agg[l - 1, 2]) / (1e-5 + k11 + k12)
+                (
+                    (k11 + (c1 == 1)) * μ_agg[l - 1, 1] +
+                    (k12 + (c1 == 2)) * μ_agg[l - 1, 2]
+                ) / (  #
+                    (k11 + (c1 == 1)) +  #
+                    (k12 + (c1 == 2))
+                )
         end
         for c1 in 1:2, c2 in 1:2, k11 in 0:N1, k12 in 0:N2, k21 in 0:N1, k22 in 0:N2
             Γ[l, c1, c2, k11, k12, k21, k22] =
                 (
-                    k11 * k21 * Γ_agg[l - 1, 1, 1] +
-                    k11 * k22 * Γ_agg[l - 1, 1, 2] +
-                    k12 * k21 * Γ_agg[l - 1, 2, 1] +
-                    k12 * k22 * Γ_agg[l - 1, 2, 2]
-                ) / (1e-5 + k11 * k21 + k11 * k22 + k12 * k21 + k12 * k22)
+                    (k11 + (c1 == 1)) * (k21 + (c2 == 1)) * Γ_agg[l - 1, 1, 1] +
+                    (k11 + (c1 == 1)) * (k22 + (c2 == 2)) * Γ_agg[l - 1, 1, 2] +
+                    (k12 + (c1 == 2)) * (k21 + (c2 == 1)) * Γ_agg[l - 1, 2, 1] +
+                    (k12 + (c1 == 2)) * (k22 + (c2 == 2)) * Γ_agg[l - 1, 2, 2]
+                ) / (
+                    (k11 + (c1 == 1)) * (k21 + (c2 == 1)) +
+                    (k11 + (c1 == 1)) * (k22 + (c2 == 2)) +
+                    (k12 + (c1 == 2)) * (k21 + (c2 == 1)) +
+                    (k12 + (c1 == 2)) * (k22 + (c2 == 2))
+                )
         end
         for c1 in 1:2, k11 in 0:N1, k12 in 0:N2
             Σ[l, c1, k11, k12] = (
@@ -80,11 +87,11 @@ function state_evolution(
         end
     end
 
-    p = Origin(0, 1)([
+    p = [
         Mixture( #
             vec(MultivariateNormal.(μ[l, c1, :, :], Σ[l, c1, :, :])),
             vec(w[c1, :, :]),
         ) for l in 0:nb_layers, c1 in 1:2
-    ])
+    ]
     return p
 end

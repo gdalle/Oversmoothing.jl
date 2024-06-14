@@ -14,7 +14,7 @@ rng = default_rng()
 
 ## Instance
 
-sbm = SBM(1000, 2, 0.02, 0.01)
+sbm = SBM(1000, 2, 0.04, 0.01)
 
 features = (
     MultivariateNormal(SVector(-1.0), SMatrix{1,1}(0.01)),  #
@@ -23,11 +23,11 @@ features = (
 
 ## Computation
 
-nb_layers = 12
+nb_layers = 8
 emb_history = @time embeddings(
-    rng, sbm, features; nb_layers, resample_graph=true, nb_graphs=200
+    rng, sbm, features; nb_layers, resample_graph=true, nb_graphs=50
 );
-dens_history = @time state_evolution(sbm, features; nb_layers, max_neighbors=100);
+dens_history = @time state_evolution(sbm, features; nb_layers, max_neighbors=50);
 
 ## KL
 
@@ -44,7 +44,11 @@ dens_history = @time state_evolution(sbm, features; nb_layers, max_neighbors=100
 ## Plotting
 
 function plot_emb_dens(
-    sbm, emb_history, dens_history, kl_lowerbound_history, kl_upperbound_history
+    sbm,
+    emb_history,
+    dens_history,
+    kl_lowerbound_history=nothing,
+    kl_upperbound_history=nothing,
 )
     (; S, Q) = sbm
     nb_layers = size(dens_history, 1) - 1
@@ -60,8 +64,8 @@ function plot_emb_dens(
     obs_dens_vals_split_points = [
         Observable(Point2f[(x, densityof(dens[c], [x])) for x in xrange]) for c in 1:C
     ]
-    obs_kl_lowerbound_points = Observable(Point2f[(0, kl_lowerbound_history[1])])
-    obs_kl_upperbound_points = Observable(Point2f[(0, kl_upperbound_history[1])])
+    # obs_kl_lowerbound_points = Observable(Point2f[(0, kl_lowerbound_history[1])])
+    # obs_kl_upperbound_points = Observable(Point2f[(0, kl_upperbound_history[1])])
 
     fig = Figure()
     Label(
@@ -115,4 +119,4 @@ function plot_emb_dens(
     end
 end
 
-plot_emb_dens(sbm, emb_history, dens_history, kl_lowerbound_history, kl_upperbound_history)
+plot_emb_dens(sbm, emb_history, dens_history)
