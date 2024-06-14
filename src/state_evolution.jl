@@ -3,34 +3,74 @@ function state_evolution(
 )
     @assert length(features) == nb_communities(sbm)
     (; S, Q) = sbm
-    N1, N2 = S
-    N1_max = min(N1, max_neighbors)
-    N2_max = min(N2, max_neighbors)
-    p01 = Mixture([features[1]], [1.0])
-    p02 = Mixture([features[2]], [1.0])
-    p = Matrix{typeof(p01)}(undef, nb_layers + 1, 2)
-    p[1, 1] = p01
-    p[1, 2] = p02
-    for l in 1:nb_layers
-        μˡ⁻¹ = (mean(p[l, 1]), mean(p[l, 2]))
-        Σˡ⁻¹ = (cov(p[l, 1]), cov(p[l, 2]))
-        dist_type = typeof(MultivariateNormal(sum(μˡ⁻¹), sum(Σˡ⁻¹)))
-        for c in 1:2
-            means = OffsetMatrix{eltype(μˡ⁻¹)}(undef, 0:N1_max, 0:N2_max)
-            covs = OffsetMatrix{eltype(Σˡ⁻¹)}(undef, 0:N1_max, 0:N2_max)
-            comps = OffsetMatrix{dist_type}(undef, 0:N1_max, 0:N2_max)
-            weights = OffsetMatrix{eltype(Q)}(undef, 0:N1_max, 0:N2_max)
-            for n1 in 0:N1_max, n2 in 0:N2_max
-                means[n1, n2] =
-                    ((n1 + (c == 1)) * μˡ⁻¹[1] + (n2 + (c == 2)) * μˡ⁻¹[2]) / (n1 + n2 + 1)
-                covs[n1, n2] =
-                    ((n1 + (c == 1)) * Σˡ⁻¹[1] + (n2 + (c == 2)) * Σˡ⁻¹[2]) /
-                    (n1 + n2 + 1)^2
-                comps[n1, n2] = MultivariateNormal(means[n1, n2], covs[n1, n2])
-                weights[n1, n2] = binompdf(N1, Q[c, 1], n1) * binompdf(N2, Q[c, 2], n2)
-            end
-            p[l + 1, c] = Mixture(vec(comps), vec(weights))
+    N1_max, N2_max = S
+    N1 = min(N1_max, max_neighbors)
+    N2 = min(N2_max, max_neighbors)
+
+    w = OffsetArray{Float64,3}(undef, 2, 0:N1, 0:N2)
+    ww = OffsetArray{Float64,6}(undef, 2, 2, 0:N1, 0:N2, 0:N1, 0:N2)
+    for c1 in 1:2, k11 in 0:N1, k12 in 0:N2
+        w[c1, k11, k12] = binompdf(N1, Q[c1, 1], k11) * binompdf(N2, Q[c1, 2], k12)
+    end
+    for c1 in 1:2, c2 in 1:2, k11 in 0:N1, k12 in 0:N2, k21 in 0:N1, k22 in 0:N2
+        ww[c1, c2, k11, k12, k21, k22] =
+            binompdf(N1, Q[c1, 1], k11) *
+            binompdf(N2, Q[c1, 2], k12) *
+            binompdf(N1, Q[c2, 1], k21) *
+            binompdf(N2, Q[c2, 2], k22)
+    end
+
+    μ0 = mean.(features)
+    Σ0 = cov.(features)
+
+    μ = OffsetArray{typeof(μ0[1]),4}(undef, 0:nb_layers, 2, 0:N1, 0:N2)
+    Γ = OffsetArray{typeof(Σ0[1]),7}(undef, 0:nb_layers, 2, 2, 0:N1, 0:N2, 0:N1, 0:N2)
+
+    μ_agg = OffsetArray{typeof(μ0[1]),2}(undef, 0:(nb_layers - 1), 2)
+    Γ_agg = OffsetArray{typeof(Σ0[1]),3}(undef, 0:(nb_layers - 1), 2, 2)
+
+    for c1 in 1:2
+        for k11 in 0:N1, k12 in 0:N2
+            μ[0, c1, k11, k12] = μ0[1]
         end
     end
-    return p
+    for c1 in 1:2, c2 in 1:2
+        for k11 in 0:N1, k12 in 0:N2, k21 in 0:N1, k22 in 0:N2
+            Γ[0, c1, c2, k11, k12, k21, k22] = μ0[c1] * μ0[c2]' + (c1 == c2) * Σ0[c1]
+        end
+    end
+
+    for l in 1:nb_layers
+        # aggregates
+        for c1 in 1:2
+            μ_agg[l - 1, c1] = zero(μ0[c1])
+            for k11 in 0:N1, k12 in 0:N2
+                μ_agg[l - 1, c1] += w[c1, k11, k12] * μ[l - 1, c1, k11, k12]
+            end
+        end
+        for c1 in 1:2, c2 in 1:2
+            Γ_agg[l - 1, c1, c2] = zero(Σ0[c1])
+            for k11 in 0:N1, k12 in 0:N2, k21 in 0:N1, k22 in 0:N2
+                Γ_agg[l - 1, c1, c2] +=
+                    ww[c1, c2, k11, k12, k21, k22] * Γ[l - 1, c1, c2, k11, k12, k21, k22]
+            end
+        end
+
+        # components
+        for c1 in 1:2, k11 in 0:N1, k12 in 0:N2
+            μ[l, c1, k11, k12] =
+                (k11 * μ_agg[l - 1, 1] + k12 * μ_agg[l - 1, 2]) / (1e-5 + k11 + k12)
+        end
+        for c1 in 1:2, c2 in 1:2, k11 in 0:N1, k12 in 0:N2, k21 in 0:N1, k22 in 0:N2
+            Γ[l, c1, c2, k11, k12, k21, k22] =
+                (
+                    k11 * k21 * Γ_agg[l - 1, 1, 1] +
+                    k11 * k22 * Γ_agg[l - 1, 1, 2] +
+                    k12 * k21 * Γ_agg[l - 1, 2, 1] +
+                    k12 * k22 * Γ_agg[l - 1, 2, 2]
+                ) / (1e-5 + k11 * k21 + k11 * k22 + k12 * k21 + k12 * k22)
+        end
+    end
+
+    return μ, Γ
 end
