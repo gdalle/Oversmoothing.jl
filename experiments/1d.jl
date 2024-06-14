@@ -68,9 +68,7 @@ function plot_emb_dens(
         fig[0, 1], "Contextual SBM with 2 communities\nN = $S       Q = $Q"; tellwidth=false
     )
     ax1 = Axis(
-        fig[1, 1];
-        title=@lift("Embedding histogram - $($obs_title)"),
-        ylabel="frequency",
+        fig[1, 1]; title=@lift("Embedding histogram - $($obs_title)"), ylabel="frequency"
     )
     ax2 = Axis(
         fig[2, 1];
