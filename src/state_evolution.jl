@@ -24,6 +24,7 @@ function state_evolution(
     Σ0 = cov.(features)
 
     μ = OffsetArray{typeof(μ0[1]),4}(undef, 0:nb_layers, 2, 0:N1, 0:N2)
+    Σ = OffsetArray{typeof(Σ0[1]),4}(undef, 0:nb_layers, 2, 0:N1, 0:N2)
     Γ = OffsetArray{typeof(Σ0[1]),7}(undef, 0:nb_layers, 2, 2, 0:N1, 0:N2, 0:N1, 0:N2)
 
     μ_agg = OffsetArray{typeof(μ0[1]),2}(undef, 0:(nb_layers - 1), 2)
@@ -69,6 +70,12 @@ function state_evolution(
                     k12 * k21 * Γ_agg[l - 1, 2, 1] +
                     k12 * k22 * Γ_agg[l - 1, 2, 2]
                 ) / (1e-5 + k11 * k21 + k11 * k22 + k12 * k21 + k12 * k22)
+        end
+        for c1 in 1:2, k11 in 0:N1, k12 in 0:N2
+            Σ[l, c1, k11, k12] = (
+                Γ[l, c1, c1, k11, k12, k11, k12] -  #
+                μ[l, c1, k11, k12] * μ[l, c1, k11, k12]'
+            )
         end
     end
 
