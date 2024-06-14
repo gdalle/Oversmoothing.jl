@@ -32,7 +32,8 @@ function state_evolution(
 
     for c1 in 1:2
         for k11 in 0:N1, k12 in 0:N2
-            μ[0, c1, k11, k12] = μ0[1]
+            μ[0, c1, k11, k12] = μ0[c1]
+            Σ[0, c1, k11, k12] = Σ0[c1]
         end
     end
     for c1 in 1:2, c2 in 1:2
@@ -79,5 +80,11 @@ function state_evolution(
         end
     end
 
-    return μ, Γ
+    p = Origin(0, 1)([
+        Mixture( #
+            vec(MultivariateNormal.(μ[l, c1, :, :], Σ[l, c1, :, :])),
+            vec(w[c1, :, :]),
+        ) for l in 0:nb_layers, c1 in 1:2
+    ])
+    return p
 end
