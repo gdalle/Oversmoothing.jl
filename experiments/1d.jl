@@ -14,7 +14,7 @@ rng = default_rng()
 
 ## Instance
 
-sbm = SBM(100, 2, 0.04, 0.01)
+sbm = SBM([30, 50], [0.03 0.01; 0.01 0.05])
 
 features = (
     MultivariateNormal(SVector(-1.0), SMatrix{1,1}(0.01)),  #
