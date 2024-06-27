@@ -34,7 +34,7 @@ export Mixture
 export StochasticBlockModel, SBM
 export community_size, community_range, community_of_vertex, nb_vertices, nb_communities
 export embeddings, split_by_community
-export state_evolution
+export first_layer_mixtures
 export kl_lowerbound, kl_upperbound, kl_approx, kl_empirical
 
 end # module Oversmoothing
