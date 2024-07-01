@@ -23,8 +23,8 @@ using Test
     @testset "Mixture" begin
         include("mixture.jl")
     end
-    @testset "Mixture of Normal" begin
-        include("mixture_normal.jl")
+    @testset "KL divergence" begin
+        include("kl.jl")
     end
     @testset "Stochastic Block Model" begin
         include("stochastic_block_model.jl")

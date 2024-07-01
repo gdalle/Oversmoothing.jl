@@ -1,5 +1,3 @@
-const MultivariateNormalMixture = Mixture{<:MultivariateNormal}
-
 function kl_lowerbound(f::MultivariateNormalMixture, g::MultivariateNormalMixture)
     ωf, ωg = weights(f), weights(g)
     cf, cg = components(f), components(g)

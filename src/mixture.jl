@@ -9,6 +9,8 @@ struct Mixture{C,W}
     end
 end
 
+const MultivariateNormalMixture = Mixture{<:MultivariateNormal}
+
 @inline DensityInterface.DensityKind(::Mixture) = DensityInterface.HasDensity()
 
 function Base.show(io::IO, mix::Mixture{D}) where {D}
