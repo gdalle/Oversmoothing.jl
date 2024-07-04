@@ -1,3 +1,5 @@
+## Standard
+
 struct StochasticBlockModel{C,T<:Real}
     S::Vector{Int}
     Q::Matrix{T}
@@ -20,8 +22,6 @@ function StochasticBlockModel(N::Integer, C::Integer, p_in::Real, p_out::Real)
 end
 
 const SBM = StochasticBlockModel
-
-Base.show(io::IO, sbm::SBM{C}) where {C} = print(io, "SBM{$C}($(sbm.S), $(sbm.Q))")
 
 nb_vertices(sbm::SBM) = sum(sbm.S)
 nb_communities(::SBM{C}) where {C} = C
@@ -87,3 +87,19 @@ function Random.rand(rng::AbstractRNG, sbm::SBM{3})
     A .-= Diagonal(A)
     return Symmetric(A, :U)
 end
+
+## Contextual
+
+struct ContextualStochasticBlockModel{C,T,F}
+    sbm::SBM{C,T}
+    features::Vector{F}
+
+    function ContextualStochasticBlockModel(
+        sbm::SBM{C,T}, features::Vector{F}
+    ) where {C,T,F}
+        @assert C == length(features)
+        return new{C,T,F}(sbm, features)
+    end
+end
+
+const CSBM = ContextualStochasticBlockModel

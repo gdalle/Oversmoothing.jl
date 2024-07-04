@@ -17,4 +17,5 @@ mix = Mixture(
 samples = [rand(rng, mix) for _ in 1:10000];
 @test mean(mix) ≈ mean(samples) rtol = 1e-1
 @test cov(mix) ≈ cov(samples) rtol = 1e-1
-@test densityof(mix, zeros(2)) ≈ dot(mix.weights, densityof.(mix.components, Ref(zeros(2))))
+@test densityof(mix, zeros(2)) ≈
+    dot(mix.weights, densityof.(mix.distributions, Ref(zeros(2))))

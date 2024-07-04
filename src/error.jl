@@ -1,30 +1,42 @@
-function bayes_classification_error(
-    rng::AbstractRNG, dists::AbstractVector, p::AbstractVector{<:Real}; nb_samples=100
+function error_montecarlo(
+    rng::AbstractRNG, mix::Mixture; nb_dist_samples=100, nb_error_samples=100
 )
-    error_bools = map(1:nb_samples) do i
-        c_true = sample(rng, eachindex(dists), StatsBase.weights(p))
-        x = rand(rng, dists[c_true])
-        l = logdensityof(dists[c_true], x)
-        for c in eachindex(dists)
-            if c != c_true && logdensityof(dists[c], x) > l
-                return true
-            else
-                return false
+    d, w = distributions(mix), weights(mix)
+    error_fractions = map(1:nb_error_samples) do _
+        error_bools = map(1:nb_dist_samples) do i
+            i_true = sample(rng, eachindex(d), StatsBase.weights(w))
+            x = rand(rng, d[i_true])
+            l = logdensityof(d[i_true], x)
+            for i in eachindex(d)
+                if i != i_true && logdensityof(d[i], x) > l
+                    return true
+                else
+                    return false
+                end
             end
         end
+        mean(error_bools)
     end
-    return mean(error_bools)
+    return Particles(error_fractions)
 end
 
-function bayes_classification_error_interval(
-    rng::AbstractRNG,
-    dists::AbstractVector,
-    p::AbstractVector{<:Real};
-    nb_samples=100,
-    nb_errors=100,
-)
-    errors = map(1:nb_errors) do k
-        bayes_classification_error(rng, dists, p; nb_samples)
-    end
-    return quantile(errors, 0.05), quantile(errors, 0.95)
+function jensen_shannon_interval(mix::Mixture)
+    return entropy_interval(flat(mix)) -
+           dot(weights(mix), entropy_interval.(distributions(mix)))
+end
+
+"""
+    error_interval(mix)
+
+# Reference
+
+> Divergence measures based on the Shannon entropy
+"""
+function error_interval(mix::Mixture)
+    n = length(mix)
+    π = weights(mix)
+    diff = entropy(Categorical(π)) - jensen_shannon_interval(mix)
+    U = sup(diff) / 2
+    L = inf(diff)^2 / 4(n - 1)
+    return interval(L, U)
 end

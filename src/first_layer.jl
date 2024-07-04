@@ -1,6 +1,5 @@
-function first_layer_mixtures(
-    sbm::SBM{2}, features::NTuple{2}; max_neighbors=nb_vertices(sbm)
-)
+function first_layer_mixtures(csbm::CSBM{2}; max_neighbors=nb_vertices(csbm.sbm))
+    (; sbm, features) = csbm
     (; S, Q) = sbm
     N1_max, N2_max = S
     N1 = min(N1_max, max_neighbors)
@@ -30,11 +29,11 @@ function first_layer_mixtures(
         Σ[c, k1, k2] = Γ[c, k1, k2] - μ[c, k1, k2] * μ[c, k1, k2]'
     end
 
-    p = [
+    mixtures = [
         Mixture( #
             vec(MultivariateNormal.(μ[c, :, :], Σ[c, :, :])),
             vec(w[c, :, :]),
         ) for c in 1:2
     ]
-    return p
+    return mixtures
 end

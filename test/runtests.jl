@@ -23,13 +23,13 @@ using Test
     @testset "Mixture" begin
         include("mixture.jl")
     end
-    @testset "KL divergence" begin
-        include("kl.jl")
+    @testset "Information theory" begin
+        include("information.jl")
     end
     @testset "Stochastic Block Model" begin
-        include("stochastic_block_model.jl")
+        include("sbm.jl")
     end
-    @testset "State evolution" begin
-        include("state_evolution.jl")
+    @testset "First layer" begin
+        include("first_layer.jl")
     end
 end
