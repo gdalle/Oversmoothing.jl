@@ -19,8 +19,9 @@ using IntervalArithmetic: interval, inf, sup
 using LogExpFunctions: logsumexp
 using MonteCarloMeasurements: Particles
 using OffsetArrays: OffsetArray, OffsetMatrix, OffsetVector, Origin
+using Roots: find_zeros
 using StatsBase: StatsBase, entropy, kldivergence, sample
-using StatsFuns: binompdf, log2π, normpdf, normlogpdf
+using StatsFuns: binompdf, log2π, normpdf, normlogpdf, xlogx
 
 const kl = StatsBase.kldivergence
 

@@ -33,10 +33,29 @@ end
 > Divergence measures based on the Shannon entropy
 """
 function error_interval(mix::Mixture)
-    n = length(mix)
+    C = length(mix)
     π = weights(mix)
-    diff = entropy(Categorical(π)) - jensen_shannon_interval(mix)
-    U = sup(diff) / 2
-    L = inf(diff)^2 / (4(n - 1))
+    conditional_entropy = entropy(Categorical(π)) - jensen_shannon_interval(mix)
+    # Jensen-Shannon upper bound
+    U = sup(conditional_entropy) / 2
+    # Fano lower bound
+    L = fano(log(C - 1), inf(conditional_entropy))
     return interval(L, U)
+end
+
+H(p::Real) = -xlogx(p) - xlogx(1 - p)
+
+fano_aux(p::Real, (a, b)) = H(p) + a * p - b
+
+function fano(a, b)
+    zs = find_zeros(Base.Fix2(fano_aux, (a, b)), 0.0, 1.0)
+    if isempty(zs)
+        if fano_aux(0, (a, b)) > 0
+            return 0.0
+        else
+            error()
+        end
+    else
+        return minimum(zs)
+    end
 end
