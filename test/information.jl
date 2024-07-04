@@ -21,10 +21,6 @@ end
 mix1 = create_mixture(rng; dim=3, nb_components=2)
 mix2 = create_mixture(rng; dim=3, nb_components=2)
 
-kl_mc = pmean(kl_montecarlo(rng, mix1, mix2; nb_samples=1000))
-kl_int = kl_interval(mix1, mix2)
-@test in_interval(kl_mc, kl_int)
-
 ent_mc = pmean(entropy_montecarlo(rng, mix1; nb_samples=1000))
 ent_int = entropy_interval(mix1)
 @test in_interval(ent_mc, ent_int)

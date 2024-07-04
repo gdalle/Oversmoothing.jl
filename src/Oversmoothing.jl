@@ -30,8 +30,7 @@ include("categorical.jl")
 include("normal.jl")
 include("mixture.jl")
 
-include("kl.jl")
-include("entropy.jl")
+include("information.jl")
 include("error.jl")
 
 include("sbm.jl")
@@ -46,10 +45,10 @@ export MultivariateNormal
 export Mixture
 export StochasticBlockModel, SBM
 export ContextualStochasticBlockModel, CSBM
-export community_size, community_range, community_of_vertex, nb_vertices, nb_communities
+export nb_vertices, nb_communities
+export community_size, community_range, community_of_vertex
 export embeddings
 export first_layer_mixtures
-export kl_interval, kl_montecarlo
 export entropy_interval, entropy_montecarlo
 export error_interval, error_montecarlo
 export plot_1d

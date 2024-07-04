@@ -18,8 +18,8 @@ rng = default_rng()
 sbm = SBM([30, 70], [0.05 0.02; 0.02 0.03])
 
 features = [
-    MultivariateNormal(SVector(-1.0), SMatrix{1,1}(0.05)),  #
-    MultivariateNormal(SVector(+1.0), SMatrix{1,1}(0.02)),  #
+    MultivariateNormal(SVector(-1.0), SMatrix{1,1}(0.5)),  #
+    MultivariateNormal(SVector(+1.0), SMatrix{1,1}(0.2)),  #
 ]
 
 csbm = CSBM(sbm, features)

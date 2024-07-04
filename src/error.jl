@@ -37,6 +37,6 @@ function error_interval(mix::Mixture)
     π = weights(mix)
     diff = entropy(Categorical(π)) - jensen_shannon_interval(mix)
     U = sup(diff) / 2
-    L = inf(diff)^2 / 4(n - 1)
+    L = inf(diff)^2 / (4(n - 1))
     return interval(L, U)
 end
