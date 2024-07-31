@@ -15,11 +15,11 @@ rng = default_rng()
 
 ## Instance
 
-sbm = SBM([30, 70], [0.05 0.02; 0.02 0.03])
+sbm = SBM([30, 70], [0.03 0.01; 0.01 0.02])
 
 features = [
-    MultivariateNormal(SVector(-1.0), SMatrix{1,1}(0.5)),  #
-    MultivariateNormal(SVector(+1.0), SMatrix{1,1}(0.2)),  #
+    MultivariateNormal(SVector(-1.0), SMatrix{1,1}(0.005)),  #
+    MultivariateNormal(SVector(+1.0), SMatrix{1,1}(0.02)),  #
 ]
 
 csbm = CSBM(sbm, features)
@@ -27,7 +27,7 @@ csbm = CSBM(sbm, features)
 ## Computation
 
 histograms0, histograms1 = @time embeddings(
-    rng, csbm; nb_layers=1, resample_graph=true, nb_samples=200
+    rng, csbm; nb_layers=1, resample_graph=true, nb_samples=1000
 );
 densities0 = [Mixture([features[1]], [1.0]), Mixture([features[2]], [1.0])]
 densities1 = first_layer_mixtures(csbm; max_neighbors=20)
