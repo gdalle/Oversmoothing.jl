@@ -15,10 +15,13 @@ using SparseArrays
 using CairoMakie
 using Colors
 using DensityInterface: DensityInterface, logdensityof, densityof
+using HCubature: HCubature
 using IntervalArithmetic: interval, inf, sup
 using LogExpFunctions: logsumexp
 using MonteCarloMeasurements: Particles
 using OffsetArrays: OffsetArray, OffsetMatrix, OffsetVector, Origin
+using QuadGK: QuadGK
+using StaticArrays: SVector
 using StatsBase: StatsBase, entropy, kldivergence, sample
 using StatsFuns: binompdf, log2π, normpdf, normlogpdf
 
@@ -51,6 +54,7 @@ export embeddings
 export first_layer_mixtures
 export entropy_interval, entropy_montecarlo
 export error_interval, error_montecarlo
-export plot_1d
+export error_quadrature_1d, error_quadrature_2d
+export plot_1d, plot_2d
 
 end # module Oversmoothing
