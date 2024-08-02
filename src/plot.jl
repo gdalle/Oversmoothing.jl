@@ -5,7 +5,7 @@ function plot_1d(
     (; S, Q) = sbm
     C = nb_communities(sbm)
 
-    joint_histogram_scalar = mapreduce(vec, vcat, histograms_scalar)
+    joint_histogram_scalar = mapreduce(vec, vcat, histograms)
     xrange = range(extrema(joint_histogram_scalar)..., 200)
 
     colors = distinguishable_colors(C, [RGB(1, 1, 1), RGB(0, 0, 0)]; dropseed=true)
@@ -24,7 +24,7 @@ function plot_1d(
     for c in 1:C
         hist!(
             ax,
-            vec(histograms_scalar[c]);
+            vec(histograms[c]);
             normalization=:pdf,
             bins=50,
             label="community $c",
