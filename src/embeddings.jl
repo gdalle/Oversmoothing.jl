@@ -1,5 +1,3 @@
-degree_matrix(A) = Diagonal(Vector(map(sum, eachcol(A))))
-
 function convolution!(X, X_scratch, A, D)
     mul!(X_scratch, A, X)
     X_scratch .+= X

@@ -49,7 +49,7 @@ function Random.rand(rng::AbstractRNG, sbm::SBM{1})
     q = only(Q)
     A = sprand(rng, Bool, N, N, q)
     A .-= Diagonal(A)
-    return Symmetric(A, :U)
+    return sparse(Symmetric(A, :U))
 end
 
 function Random.rand(rng::AbstractRNG, sbm::SBM{2})
@@ -64,7 +64,7 @@ function Random.rand(rng::AbstractRNG, sbm::SBM{2})
         A21 A22
     ]
     A .-= Diagonal(A)
-    return Symmetric(A, :U)
+    return sparse(Symmetric(A, :U))
 end
 
 function Random.rand(rng::AbstractRNG, sbm::SBM{3})
@@ -85,7 +85,7 @@ function Random.rand(rng::AbstractRNG, sbm::SBM{3})
         A31 A32 A33
     ]
     A .-= Diagonal(A)
-    return Symmetric(A, :U)
+    return sparse(Symmetric(A, :U))
 end
 
 ## Contextual

@@ -37,6 +37,7 @@ include("information.jl")
 include("error.jl")
 
 include("sbm.jl")
+include("random_walk.jl")
 include("embeddings.jl")
 include("first_layer.jl")
 
