@@ -13,7 +13,7 @@ rng = default_rng()
 
 ## Instance
 
-sbm = SBM(300, 3, 0.03, 0.01)
+sbm = SBM(3000, 3, 0.002, 0.001)
 
 features = [
     MultivariateNormal(SVector(-1.0), SMatrix{1,1}(0.03)),  #
@@ -25,20 +25,15 @@ csbm = CSBM(sbm, features)
 
 ## Computation
 
-histograms0, histograms1 = @time embeddings(rng, csbm; nb_layers=1, nb_samples=1000);
-densities0 = [Mixture([features[c]], [1.0]) for c in eachindex(features)];
-densities1 = first_layer_mixtures(csbm; max_neighbors=50);
+L = 3
+histograms = @time embeddings(rng, csbm; nb_layers=L, nb_samples=100);
+# densities1 = first_layer_mixtures(csbm; max_neighbors=50);
+densities = [empirical_mixtures(rng, csbm; nb_layers=l, nb_samples=10) for l in 0:L];
 
-plot_1d(csbm, histograms0, densities0; layer=0)
-plot_1d(csbm, histograms1, densities1; layer=1)
-
-mix0 = Mixture(densities0, sbm.S ./ sum(sbm.S))
-mix1 = Mixture(densities1, sbm.S ./ sum(sbm.S))
+plot_1d(csbm, histograms, densities)
 
 error_montecarlo(rng, mix0; nb_dist_samples=100, nb_error_samples=100)
-error_montecarlo(rng, mix1; nb_dist_samples=100, nb_error_samples=100)
+error_montecarlo(rng, mix0; nb_dist_samples=100, nb_error_samples=100)
 
 error_quadrature_1d(mix0)
 error_quadrature_1d(mix1)
-
-empirical_mixtures(rng, csbm; nb_layers=1)

@@ -46,26 +46,3 @@ function error_quadrature_2d(mix::Mixture; bound=100, kwargs...)
     precision = interval(cub_result - cub_error, cub_result + cub_error)
     return 1 - precision
 end
-
-## Information theory
-
-function jensen_shannon_interval(mix::Mixture)
-    return entropy_interval(flat(mix)) -
-           dot(weights(mix), entropy_interval.(distributions(mix)))
-end
-
-"""
-    error_interval(mix)
-
-# Reference
-
-> Divergence measures based on the Shannon entropy
-"""
-function error_interval(mix::Mixture)
-    n = length(mix)
-    π = weights(mix)
-    diff = entropy(Categorical(π)) - jensen_shannon_interval(mix)
-    U = sup(diff) / 2
-    L = inf(diff)^2 / (4(n - 1))
-    return interval(L, U)
-end

@@ -1,13 +1,9 @@
-function embeddings(
-    rng::AbstractRNG,
-    csbm::CSBM{C};
-    nb_layers::Integer,
-    nb_samples::Integer=1,
-) where {C}
+function embeddings(rng::AbstractRNG, csbm::CSBM; nb_layers::Integer, nb_samples::Integer=1)
     (; sbm, features) = csbm
     S = nb_samples
     L = nb_layers
     N = nb_vertices(sbm)
+    C = nb_communities(sbm)
     P = length(features[1])
     T = eltype(features[1])
 

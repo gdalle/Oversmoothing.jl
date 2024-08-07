@@ -23,9 +23,6 @@ using Test
     @testset "Mixture" begin
         include("mixture.jl")
     end
-    @testset "Information theory" begin
-        include("information.jl")
-    end
     @testset "Stochastic Block Model" begin
         include("sbm.jl")
     end

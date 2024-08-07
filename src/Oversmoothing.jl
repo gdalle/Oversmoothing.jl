@@ -17,6 +17,8 @@ using Colors
 using DensityInterface: DensityInterface, logdensityof, densityof
 using HCubature: HCubature
 using IntervalArithmetic: interval, inf, sup
+using LaTeXStrings
+using Latexify: latexify
 using LogExpFunctions: logsumexp
 using MonteCarloMeasurements: Particles
 using OffsetArrays: OffsetArray, OffsetMatrix, OffsetVector, Origin
@@ -25,15 +27,11 @@ using StaticArrays: SVector
 using StatsBase: StatsBase, entropy, kldivergence, sample
 using StatsFuns: binompdf, log2π, normpdf, normlogpdf
 
-const kl = StatsBase.kldivergence
-
 ## includes
 
 include("categorical.jl")
 include("normal.jl")
 include("mixture.jl")
-
-include("information.jl")
 include("error.jl")
 
 include("sbm.jl")
