@@ -1,16 +1,8 @@
-function convolution!(X, X_scratch, A, D)
-    mul!(X_scratch, A, X)
-    X_scratch .+= X
-    ldiv!(X, D, X_scratch)
-    return nothing
-end
-
 function embeddings(
     rng::AbstractRNG,
     csbm::CSBM{C};
     nb_layers::Integer,
     nb_samples::Integer=1,
-    resample_graph=false,
 ) where {C}
     (; sbm, features) = csbm
     S = nb_samples
@@ -27,15 +19,12 @@ function embeddings(
         end
         copyto!(view(H_history, s, 1, :, :), X)
         A = rand(rng, sbm)
-        D = degree_matrix(A) + I
+        W = random_walk(A)
         H = copy(X)
         H_scratch = copy(H)
         for l in 1:L
-            if resample_graph
-                A = rand(rng, sbm)
-                D = degree_matrix(A) + I
-            end
-            convolution!(H, H_scratch, A, D)
+            mul!(H_scratch, W, H)
+            copyto!(H, H_scratch)
             copyto!(view(H_history, s, l + 1, :, :), H)
         end
     end

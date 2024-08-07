@@ -53,6 +53,7 @@ export nb_vertices, nb_communities
 export community_size, community_range, community_of_vertex
 export embeddings
 export first_layer_mixtures
+export empirical_mixtures
 export entropy_interval, entropy_montecarlo
 export error_interval, error_montecarlo
 export error_quadrature_1d, error_quadrature_2d

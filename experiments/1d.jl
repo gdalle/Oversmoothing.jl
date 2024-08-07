@@ -25,9 +25,7 @@ csbm = CSBM(sbm, features)
 
 ## Computation
 
-histograms0, histograms1 = @time embeddings(
-    rng, csbm; nb_layers=1, resample_graph=true, nb_samples=1000
-);
+histograms0, histograms1 = @time embeddings(rng, csbm; nb_layers=1, nb_samples=1000);
 densities0 = [Mixture([features[c]], [1.0]) for c in eachindex(features)];
 densities1 = first_layer_mixtures(csbm; max_neighbors=50);
 
@@ -42,3 +40,5 @@ error_montecarlo(rng, mix1; nb_dist_samples=100, nb_error_samples=100)
 
 error_quadrature_1d(mix0)
 error_quadrature_1d(mix1)
+
+empirical_mixtures(rng, csbm; nb_layers=1)
