@@ -9,6 +9,10 @@ struct Mixture{D,W}
     end
 end
 
+function Mixture(distributions)
+    return Mixture(distributions, fill(1 / length(distributions), length(distributions)))
+end
+
 const MultivariateNormalMixture = Mixture{<:MultivariateNormal}
 
 @inline DensityInterface.DensityKind(::Mixture) = DensityInterface.HasDensity()

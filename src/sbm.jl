@@ -1,6 +1,5 @@
-function unnest_matrix_of_blocks(matrix_of_blocks::AbstractMatrix{<:AbstractMatrix})
-    vector_of_blocks = map(Base.splat(hcat), eachrow(matrix_of_blocks))
-    return vcat(vector_of_blocks...)
+function unnest_matrix_of_blocks(matrix_of_blocks)
+    return mapreduce(Base.splat(hcat), vcat, eachrow(matrix_of_blocks))
 end
 
 struct StochasticBlockModel{C,T<:Real}
@@ -63,7 +62,7 @@ function Random.rand(rng::AbstractRNG, sbm::SBM{C}) where {C}
             B[c1, c2] = spzeros(Bool, sizes[c1], sizes[c2])
         end
     end
-    A = unnest_matrix_of_blocks(B)
+    A::SparseMatrixCSC{Bool,Int} = unnest_matrix_of_blocks(B)
     A .-= Diagonal(A)
     return sparse(Symmetric(A, :U))
 end

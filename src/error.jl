@@ -29,9 +29,9 @@ function (bp::BayesPrecision)(x)
     return maximum(p)
 end
 
-function error_quadrature_1d(mix::Mixture; kwargs...)
+function error_quadrature_1d(mix::Mixture; bound=100, kwargs...)
     bp = BayesPrecision(mix)
-    quad_result, quad_error = QuadGK.quadgk(bp, -Inf, Inf; kwargs...)
+    quad_result, quad_error = QuadGK.quadgk(bp, -bound, bound; kwargs...)
     precision = interval(quad_result - quad_error, quad_result + quad_error)
     return 1 - precision
 end

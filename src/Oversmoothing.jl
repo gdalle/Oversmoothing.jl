@@ -53,6 +53,7 @@ export community_size, community_range, community_of_vertex
 export embeddings
 export first_layer_mixtures, empirical_mixtures
 export error_quadrature_1d, error_quadrature_2d
+export random_walk_mixtures, random_walk_errors
 export plot_1d, plot_2d
 
 end # module Oversmoothing

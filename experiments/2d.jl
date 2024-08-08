@@ -26,8 +26,8 @@ csbm = CSBM(sbm, features)
 ## Computation
 
 L = 2
-histograms = @time embeddings(rng, csbm; nb_layers=L, nb_samples=100);
+histograms = @time embeddings(rng, csbm; nb_layers=L, nb_graphs=100);
 # densities1 = first_layer_mixtures(csbm; max_neighbors=50);
-densities = [empirical_mixtures(rng, csbm; nb_layers=l, nb_samples=2) for l in 0:L];
+densities = random_walk_mixtures(rng, csbm; nb_layers=L, nb_graphs=2);
 
 plot_2d(csbm, histograms, densities)

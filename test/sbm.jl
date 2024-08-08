@@ -6,17 +6,16 @@ using Test
 
 rng = StableRNG(63)
 
-@testset "Technicalities" begin
-    B = [rand(4, 5) for i in 1:2, j in 1:3]
-    A = [B[1, 1] B[1, 2] B[1, 3]; B[2, 1] B[2, 2] B[2, 3]]
-    @test Oversmoothing.unnest_matrix_of_blocks(B) == A
-end
+B = [rand(4, 5) for i in 1:2, j in 1:3]
+A = [B[1, 1] B[1, 2] B[1, 3]; B[2, 1] B[2, 2] B[2, 3]]
+@test Oversmoothing.unnest_matrix_of_blocks(B) == A
 
 @testset "2 communities" begin
     N = 1000
     Q = [0.05 0.01; 0.01 0.03]
     sbm = SBM([N, 2N], Q)
-    A = rand(rng, sbm)
+    A = @inferred rand(rng, sbm)
+    W = @inferred Oversmoothing.random_walk(A)
 
     @test nb_vertices(sbm) == 3N
     @test community_size.(Ref(sbm), 1:2) == [N, 2N]
