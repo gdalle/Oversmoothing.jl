@@ -20,9 +20,10 @@ using IntervalArithmetic: interval, inf, sup
 using LaTeXStrings
 using Latexify: latexify
 using LogExpFunctions: logsumexp
+using MathTeXEngine: MathTeXEngine
 using MonteCarloMeasurements: Particles
 using OffsetArrays: OffsetArray, OffsetMatrix, OffsetVector, Origin
-using OhMyThreads: OhMyThreads
+using OhMyThreads: OhMyThreads, tmap, tmapreduce
 using QuadGK: QuadGK
 using StableRNGs: StableRNGs
 using StaticArrays: SVector
@@ -36,9 +37,10 @@ include("mixture.jl")
 include("error.jl")
 
 include("sbm.jl")
-include("random_walk.jl")
 include("embeddings.jl")
 include("first_layer.jl")
+include("random_walk.jl")
+include("depth.jl")
 
 include("plot.jl")
 
@@ -51,9 +53,9 @@ export ContextualStochasticBlockModel, CSBM
 export nb_vertices, nb_communities
 export community_size, community_range, community_of_vertex
 export embeddings
-export first_layer_mixtures, empirical_mixtures
-export error_quadrature_1d, error_quadrature_2d
-export random_walk_mixtures, random_walk_errors
+export error_quadrature, error_montecarlo
+export first_layer_mixtures
+export random_walk_mixtures, random_walk_errors, best_depth
 export plot_1d, plot_2d
 
 end # module Oversmoothing

@@ -9,6 +9,7 @@ MultivariateNormal(μ, Σ) = MultivariateNormal(μ, Σ, inv(Σ), logdet(Σ))
 
 @inline DensityInterface.DensityKind(::MultivariateNormal) = DensityInterface.HasDensity()
 
+Base.length(g::MultivariateNormal) = length(g.μ)
 Statistics.mean(g::MultivariateNormal) = g.μ
 Statistics.cov(g::MultivariateNormal) = g.Σ
 invcov(g::MultivariateNormal) = g.Σ⁻¹

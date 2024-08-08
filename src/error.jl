@@ -31,16 +31,24 @@ end
 
 function error_quadrature_1d(mix::Mixture; bound=100, kwargs...)
     bp = BayesPrecision(mix)
-    quad_result, quad_error = QuadGK.quadgk(bp, -bound, bound; kwargs...)
-    precision = interval(quad_result - quad_error, quad_result + quad_error)
+    precision, quad_error = QuadGK.quadgk(bp, -bound, bound; kwargs...)
+    precision_interval = interval(precision - quad_error, precision + quad_error)
     return 1 - precision
 end
 
-function error_quadrature_2d(mix::Mixture; bound=100, kwargs...)
+function error_quadrature_nd(mix::Mixture; bound=100, kwargs...)
     bp = BayesPrecision(mix)
-    cub_result, cub_error = HCubature.hcubature(
-        bp, (-bound, -bound), (bound, bound); kwargs...
+    precision, cub_error = HCubature.hcubature(
+        bp, -fill(bound, length(mix)), +fill(bound, length(mix)); kwargs...
     )
-    precision = interval(cub_result - cub_error, cub_result + cub_error)
+    precision_interval = interval(precision - cub_error, precision + cub_error)
     return 1 - precision
+end
+
+function error_quadrature(mix::Mixture; kwargs...)
+    if length(mix) == 1
+        return error_quadrature_1d(mix, kwargs...)
+    else
+        return error_quadrature_nd(mix; kwargs...)
+    end
 end

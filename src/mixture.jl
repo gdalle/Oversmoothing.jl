@@ -17,7 +17,7 @@ const MultivariateNormalMixture = Mixture{<:MultivariateNormal}
 
 @inline DensityInterface.DensityKind(::Mixture) = DensityInterface.HasDensity()
 
-Base.length(mix::Mixture) = length(mix.distributions)
+Base.length(mix::Mixture) = length(first(mix.distributions))
 distributions(mix::Mixture) = mix.distributions
 weights(mix::Mixture) = mix.weights
 

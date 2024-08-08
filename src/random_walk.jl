@@ -31,6 +31,7 @@ function community_walk_probabilities(rng::AbstractRNG, sbm::SBM; nb_layers=1, n
                 t[l + 1, c0, c1][g, :] .= R2_summed_by_blocks[c1][inds(c0)]
             end
             R = R * W
+            yield()
         end
     end
     return s, t
@@ -56,18 +57,4 @@ function random_walk_mixtures(rng::AbstractRNG, csbm::CSBM, ; nb_layers=1, nb_gr
         end
     end
     return mixtures
-end
-
-function random_walk_errors(
-    rng::AbstractRNG, csbm::CSBM, ::Val{dim}; nb_layers=1, nb_graphs=1
-) where {dim}
-    (; sbm) = csbm
-    (; sizes) = sbm
-    mixtures = random_walk_mixtures(rng, csbm; nb_layers, nb_graphs)
-    to_classify = [Mixture(mixtures[l + 1, :], sizes ./ sum(sizes)) for l in 0:nb_layers]
-    if dim == 1
-        return error_quadrature_1d.(to_classify)
-    elseif dim == 2
-        return error_quadrature_2d.(to_classify)
-    end
 end
