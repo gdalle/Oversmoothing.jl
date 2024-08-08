@@ -1,5 +1,3 @@
-## Integration
-
 function error_montecarlo(
     rng::AbstractRNG, mix::Mixture; nb_dist_samples=100, nb_error_samples=100
 )

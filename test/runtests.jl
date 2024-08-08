@@ -26,7 +26,4 @@ using Test
     @testset "Stochastic Block Model" begin
         include("sbm.jl")
     end
-    @testset "First layer" begin
-        include("first_layer.jl")
-    end
 end

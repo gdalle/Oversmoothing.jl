@@ -1,5 +1,5 @@
 using Pkg
-Pkg.activate(@__DIR__)
+Pkg.activate(dirname(@__DIR__))
 
 using DensityInterface
 using LinearAlgebra
@@ -31,12 +31,3 @@ histograms = @time embeddings(rng, csbm; nb_layers=L, nb_samples=100);
 densities = [empirical_mixtures(rng, csbm; nb_layers=l, nb_samples=2) for l in 0:L];
 
 plot_2d(csbm, histograms, densities)
-
-mix0 = Mixture(densities0, sbm.S ./ sum(sbm.S))
-mix1 = Mixture(densities1, sbm.S ./ sum(sbm.S))
-
-error_montecarlo(rng, mix0; nb_dist_samples=100, nb_error_samples=100)
-error_montecarlo(rng, mix1; nb_dist_samples=100, nb_error_samples=100)
-
-error_quadrature_2d(mix0)
-error_quadrature_2d(mix1)

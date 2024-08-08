@@ -17,15 +17,6 @@ Base.length(mix::Mixture) = length(mix.distributions)
 distributions(mix::Mixture) = mix.distributions
 weights(mix::Mixture) = mix.weights
 
-flat(mix::Mixture) = mix
-
-function flat(mix::Mixture{<:Mixture})
-    d, w = distributions(mix), weights(mix)
-    all_d = reduce(vcat, distributions.(d))
-    all_w = reduce(vcat, weights.(d) .* w)
-    return Mixture(all_d, all_w)
-end
-
 function Base.rand(rng::AbstractRNG, mix::Mixture)
     di = sample(rng, distributions(mix), StatsBase.weights(weights(mix)))
     return rand(rng, di)

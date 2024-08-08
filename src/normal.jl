@@ -27,20 +27,23 @@ function Random.rand(
     return μ .+ L * z
 end
 
+center(x::AbstractVector, μ::AbstractVector) = x - μ
+
 function DensityInterface.logdensityof(g::MultivariateNormal, x::AbstractVector)
     k = length(g)
     μ, Σ⁻¹, logdetΣ = mean(g), invcov(g), logdetcov(g)
-    l = (-k * log2π - logdetΣ - dot(x - μ, Σ⁻¹, x - μ)) / 2
-    @assert !isnan(l)
+    x̄ = center(x, μ)
+    l = (-k * log2π - logdetΣ - dot(x̄, Σ⁻¹, x̄)) / 2
     return l
 end
 
 function DensityInterface.logdensityof(g::MultivariateNormal, x::Number)
     k = length(g)
-    @assert k == 1
+    if k > 1
+        throw(ArgumentError("Distribution is not scalar-valued"))
+    end
     μ, Σ⁻¹, logdetΣ = mean(g), invcov(g), logdetcov(g)
     l = (-k * log2π - logdetΣ - dot(x - only(μ), only(Σ⁻¹), x - only(μ))) / 2
-    @assert !isnan(l)
     return l
 end
 

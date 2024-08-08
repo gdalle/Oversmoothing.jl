@@ -1,7 +1,7 @@
 function first_layer_mixtures(csbm::CSBM{C}; max_neighbors=nb_vertices(csbm.sbm)) where {C}
     (; sbm, features) = csbm
-    (; S, Q) = sbm
-    N = min.(S, max_neighbors)
+    (; sizes, connectivities) = sbm
+    N = min.(sizes, max_neighbors)
 
     μ0 = mean.(features)
     Σ0 = cov.(features)
@@ -12,7 +12,7 @@ function first_layer_mixtures(csbm::CSBM{C}; max_neighbors=nb_vertices(csbm.sbm)
 
     w_aux = OffsetArray{Float64,3}(undef, C, C, 0:maximum(N))
     for c0 in 1:C, c1 in 1:C, k1 in 0:maximum(N)
-        w_aux[c0, c1, k1] = binompdf(S[c1], Q[c0, c1], k1)
+        w_aux[c0, c1, k1] = binompdf(sizes[c1], connectivities[c0, c1], k1)
     end
 
     lims = ntuple(c -> 0:N[c], Val(C))
