@@ -8,11 +8,11 @@ function plot_1d(csbm::CSBM, histograms::Matrix{<:Matrix}, densities::Matrix{<:M
 
     colors = distinguishable_colors(C, [RGB(1, 1, 1), RGB(0, 0, 0)]; dropseed=true)
 
-    fig = Figure(; size=(600, 200 * length(histograms)))
+    fig = Figure(; size=(600, 200 * (L + 1)))
     axes = Axis[]
     Label(fig[0, 1], "Contextual SBM in 1D"; tellwidth=false)
     for l in 0:L
-        ax = Axis(fig[l + 1, 1]; title="Layer $(l-1)")
+        ax = Axis(fig[l + 1, 1]; title="Layer $l")
         push!(axes, ax)
         linkxaxes!(ax, axes[1])
         for c in 1:C

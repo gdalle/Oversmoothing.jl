@@ -28,11 +28,18 @@ textheme = Theme(;
 
 ## Instance
 
-sbm = SBM(300, 3, 0.02, 0.01)
+sbm = SBM(
+    [100, 200, 300],
+    [
+        0.05 0.02 0.01
+        0.02 0.03 0.02
+        0.01 0.02 0.04
+    ],
+)
 
 features = [
     MultivariateNormal(SVector(-1.0), SMatrix{1,1}(0.3)),  #
-    MultivariateNormal(SVector(0.0), SMatrix{1,1}(0.1)),  #
+    MultivariateNormal(SVector(-0.0), SMatrix{1,1}(0.1)),  #
     MultivariateNormal(SVector(+1.0), SMatrix{1,1}(0.2)),  #
 ]
 
@@ -40,14 +47,22 @@ csbm = CSBM(sbm, features)
 
 ## Computation
 
-L = 4
+L = 3
 histograms = @time embeddings(rng, csbm; nb_layers=L, nb_graphs=100);
 # densities1 = first_layer_mixtures(csbm; max_neighbors=50);
 densities = random_walk_mixtures(rng, csbm; nb_layers=L, nb_graphs=3);
 
 plot_1d(csbm, histograms, densities)
 
-errors = random_walk_errors(rng, csbm; nb_graphs=10, nb_layers=L, nb_trajectories=2)
+error_trajectories = random_walk_errors(
+    rng, csbm; nb_graphs=10, nb_layers=L, nb_trajectories=10
+)
+
+errors = Particles.(Vector.(eachrow(error_trajectories)))
+
+fig, _, _ = scatterlines(0:L, pmean.(errors))
+errorbars!(0:L, pmean.(errors), pstd.(errors))
+fig
 
 ## Best depth
 
@@ -61,7 +76,7 @@ d_values = tmap(collect(Iterators.product(p_values, q_values))) do (p, q)
         MultivariateNormal(SVector(-1.0), SMatrix{1,1}(2.0)),
         MultivariateNormal(SVector(+1.0), SMatrix{1,1}(2.0)),
     ]
-    best_depth(rng, CSBM(sbm, features); nb_trajectories=10, nb_layers=10, nb_graphs=10)
+    best_depth(rng, CSBM(sbm, features); nb_trajectories=10, nb_layers=5, nb_graphs=100)
 end
 
 with_theme(textheme) do
