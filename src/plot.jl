@@ -1,3 +1,14 @@
+MYTHEME = Theme(;
+	theme_latexfonts()...,
+	palette = (
+		color=Makie.wong_colors(),
+		linestyle=[:solid, :dash, :dashdot, :dot],
+		marker=[:circle, :xcross, :rect, :star5, :utriangle],
+	),
+	Scatter = (cycle = Cycle([:color, :linestyle, :marker], covary=true),),
+	ScatterLines = (cycle = Cycle([:color, :linestyle, :marker], covary=true),),
+)
+
 function plot_1d(csbm::CSBM, histograms::Matrix{<:Matrix}, densities::Matrix{<:Mixture};)
     (; sbm, features) = csbm
     L = size(densities, 1) - 1
@@ -8,7 +19,7 @@ function plot_1d(csbm::CSBM, histograms::Matrix{<:Matrix}, densities::Matrix{<:M
 
     colors = distinguishable_colors(C, [RGB(1, 1, 1), RGB(0, 0, 0)]; dropseed=true)
 
-    with_theme(theme_latexfonts()) do
+    with_theme(MYTHEME) do
         fig = Figure(; size=(600, 200 * (L + 1)))
         axes = Axis[]
         Label(fig[-1, 1:2], "Contextual SBM in 1D"; tellwidth=false, fontsize=20)
@@ -69,7 +80,7 @@ function plot_2d(csbm::CSBM, histograms::Matrix{<:Matrix}, densities::Matrix{<:M
 
     colors = distinguishable_colors(C, [RGB(1, 1, 1), RGB(0, 0, 0)]; dropseed=true)
 
-    with_theme(theme_latexfonts()) do
+    with_theme(MYTHEME) do
         fig = Figure(; size=(700, 200 * (L + 1)))
         all_axes = Axis[]
         Label(fig[-2, 1:C+1], "Contextual SBM in 2D"; tellwidth=false, fontsize=20)

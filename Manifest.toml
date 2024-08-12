@@ -1059,11 +1059,11 @@ version = "0.8.4"
 
 [[deps.MakieTeX]]
 deps = ["Base64", "Cairo", "Colors", "DocStringExtensions", "Ghostscript_jll", "Glib_jll", "LaTeXStrings", "Makie", "Poppler_jll", "Rsvg", "Typstry", "tectonic_jll"]
-git-tree-sha1 = "44def0e6392850e8eb6dc68b52d4f01e75241bf9"
+git-tree-sha1 = "27d06907689f16a9df5859aecc894fa46b9c6580"
 repo-rev = "master"
 repo-url = "https://github.com/JuliaPlots/MakieTeX.jl"
 uuid = "6d554a22-29e7-47bd-aee5-0c5f06619414"
-version = "0.4.1"
+version = "0.4.2"
 weakdeps = ["CairoMakie"]
 
     [deps.MakieTeX.extensions]
