@@ -1,5 +1,5 @@
 function plot_1d(csbm::CSBM, histograms::Matrix{<:Matrix}, densities::Matrix{<:Mixture};)
-    (; sbm) = csbm
+    (; sbm, features) = csbm
     L = size(densities, 1) - 1
     C = nb_communities(sbm)
 
@@ -11,9 +11,25 @@ function plot_1d(csbm::CSBM, histograms::Matrix{<:Matrix}, densities::Matrix{<:M
     with_theme(theme_latexfonts()) do
         fig = Figure(; size=(600, 200 * (L + 1)))
         axes = Axis[]
-        Label(fig[0, 1], "Contextual SBM in 1D"; tellwidth=false)
+        Label(fig[-1, 1:2], "Contextual SBM in 1D"; tellwidth=false, fontsize=20)
+        LTeX(
+            fig[0, 1],
+            L"""
+Connectivities: %$(latexify(sbm.connectivities; env=:inline))
+""";
+            tellwidth=false,
+        )
+        LTeX(
+            fig[0, 2],
+            L"""
+    Community sizes: %$(latexify(sbm.sizes'; env=:inline))\\
+    Means: %$(latexify(only.(mean.(features))'; env=:inline))\\
+    Variances: %$(latexify(only.(cov.(features))'; env=:inline))
+""";
+            tellwidth=false,
+        )
         for l in 0:L
-            ax = Axis(fig[l + 1, 1]; title="Layer $l")
+            ax = Axis(fig[l + 1, 1:2]; title="Layer $l")
             push!(axes, ax)
             linkxaxes!(ax, axes[1])
             for c in 1:C
@@ -39,7 +55,7 @@ function plot_1d(csbm::CSBM, histograms::Matrix{<:Matrix}, densities::Matrix{<:M
 end
 
 function plot_2d(csbm::CSBM, histograms::Matrix{<:Matrix}, densities::Matrix{<:Mixture};)
-    (; sbm) = csbm
+    (; sbm, features) = csbm
     C = nb_communities(sbm)
     L = size(histograms, 1) - 1
 
@@ -56,12 +72,34 @@ function plot_2d(csbm::CSBM, histograms::Matrix{<:Matrix}, densities::Matrix{<:M
     with_theme(theme_latexfonts()) do
         fig = Figure(; size=(700, 200 * (L + 1)))
         all_axes = Axis[]
-        Label(fig[-1, 1:C], "Contextual SBM in 2D"; tellwidth=false, fontsize=20)
+        Label(fig[-2, 1:C], "Contextual SBM in 2D"; tellwidth=false, fontsize=20)
         for c in 1:C
-            Label(fig[0, c], "Community $c"; tellwidth=false)
+            Label(fig[-1, c], "Community $c ($(sbm.sizes[c]))"; tellwidth=false)
+            LTeX(
+                fig[0, c],
+                L"""
+    Mean: %$(latexify(mean(features[c]); env=:inline))
+
+    \medskip
+
+    Cov: %$(latexify(cov(features[c]); env=:inline))
+""";
+                tellwidth=false,
+            )
         end
+        LTeX(
+            fig[-1:0, C + 1],
+            L"""
+    Connectivities:
+
+    \medskip
+
+    %$(latexify(sbm.connectivities; env=:inline))
+""";
+            tellwidth=true,
+        )
         for l in 0:L
-            Label(fig[l + 1, C + 1], "Layer $l"; tellheight=false)
+            Label(fig[l + 1, C + 1], "Layer $l"; tellheight=false, font=:bold)
             axes = [
                 Axis(
                     fig[l + 1, c];

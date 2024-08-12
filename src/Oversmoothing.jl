@@ -20,6 +20,7 @@ using IntervalArithmetic: interval, inf, sup
 using LaTeXStrings
 using Latexify: latexify
 using LogExpFunctions: logsumexp
+using MakieTeX
 using MonteCarloMeasurements: Particles
 using OffsetArrays: OffsetArray, OffsetMatrix, OffsetVector, Origin
 using OhMyThreads: OhMyThreads, tmap, tmapreduce
