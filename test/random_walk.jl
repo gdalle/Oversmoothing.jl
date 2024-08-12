@@ -16,4 +16,4 @@ features = [
 
 csbm = CSBM(sbm, features)
 
-best_depth = best_depth(rng, csbm; nb_layers=4, nb_graphs=2)
+random_walk_errors(rng, csbm; nb_layers=L, nb_graphs=100, nb_samples=100)

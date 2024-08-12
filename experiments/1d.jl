@@ -6,7 +6,6 @@ using DensityInterface
 using LaTeXStrings
 using Latexify
 using LinearAlgebra
-using MathTeXEngine
 using MonteCarloMeasurements
 using OhMyThreads
 using Oversmoothing
@@ -17,52 +16,28 @@ using StaticArrays
 BLAS.set_num_threads(1)
 rng = default_rng()
 
-textheme = Theme(;
-    fonts=(;
-        regular=texfont(:text),
-        bold=texfont(:bold),
-        italic=texfont(:italic),
-        bold_italic=texfont(:bolditalic),
-    ),
-)
-
 ## Instance
 
-sbm = SBM(
-    [100, 200, 300],
-    [
-        0.05 0.02 0.01
-        0.02 0.03 0.02
-        0.01 0.02 0.04
-    ],
-)
+sbm = SBM(100, 3, 0.02, 0.01)
 
 features = [
-    MultivariateNormal(SVector(-1.0), SMatrix{1,1}(0.3)),  #
-    MultivariateNormal(SVector(-0.0), SMatrix{1,1}(0.1)),  #
-    MultivariateNormal(SVector(+1.0), SMatrix{1,1}(0.2)),  #
+    MultivariateNormal(SVector(-1.0), SMatrix{1,1}(0.03)),  #
+    MultivariateNormal(SVector(-0.0), SMatrix{1,1}(0.01)),  #
+    MultivariateNormal(SVector(+1.0), SMatrix{1,1}(0.02)),  #
 ]
 
 csbm = CSBM(sbm, features)
 
 ## Computation
 
-L = 3
-histograms = @time embeddings(rng, csbm; nb_layers=L, nb_graphs=100);
+L = 4
+histograms = @time embeddings(rng, csbm; nb_layers=L, nb_graphs=1000);
 # densities1 = first_layer_mixtures(csbm; max_neighbors=50);
-densities = random_walk_mixtures(rng, csbm; nb_layers=L, nb_graphs=3);
+densities = random_walk_mixtures(rng, csbm; nb_layers=L, nb_graphs=100);
 
 plot_1d(csbm, histograms, densities)
 
-error_trajectories = random_walk_errors(
-    rng, csbm; nb_graphs=10, nb_layers=L, nb_trajectories=10
-)
-
-errors = Particles.(Vector.(eachrow(error_trajectories)))
-
-fig, _, _ = scatterlines(0:L, pmean.(errors))
-errorbars!(0:L, pmean.(errors), pstd.(errors))
-fig
+errors = random_walk_errors(rng, csbm; nb_layers=L, nb_graphs=100, nb_samples=100)
 
 ## Best depth
 
@@ -79,7 +54,7 @@ d_values = tmap(collect(Iterators.product(p_values, q_values))) do (p, q)
     best_depth(rng, CSBM(sbm, features); nb_trajectories=10, nb_layers=5, nb_graphs=100)
 end
 
-with_theme(textheme) do
+with_theme(theme_latexfonts()) do
     fig = Figure()
     ax = Axis(
         fig[1, 1];

@@ -5,18 +5,21 @@ struct MultivariateNormal{T<:Real,V<:AbstractVector{T},M<:AbstractMatrix{T}}
     logdetΣ::T
 end
 
-MultivariateNormal(μ, Σ) = MultivariateNormal(μ, Σ, inv(Σ), logdet(Σ))
+function MultivariateNormal(μ, Σ)
+    @assert ishermitian(Σ)
+    return MultivariateNormal(μ, Σ, inv(Σ), logdet(Σ))
+end
 
 @inline DensityInterface.DensityKind(::MultivariateNormal) = DensityInterface.HasDensity()
 
 Base.length(g::MultivariateNormal) = length(g.μ)
+Base.eltype(g::MultivariateNormal) = promote_type(eltype(g.μ), eltype(g.Σ))
+
 Statistics.mean(g::MultivariateNormal) = g.μ
 Statistics.cov(g::MultivariateNormal) = g.Σ
+
 invcov(g::MultivariateNormal) = g.Σ⁻¹
 logdetcov(g::MultivariateNormal) = g.logdetΣ
-
-Base.length(g::MultivariateNormal) = length(mean(g))
-Base.eltype(g::MultivariateNormal) = promote_type(eltype(mean(g)), eltype(cov(g)))
 
 function Random.rand(
     rng::AbstractRNG, g::MultivariateNormal, dims::Vararg{Integer,N}

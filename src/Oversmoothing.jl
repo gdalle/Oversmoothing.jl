@@ -4,7 +4,7 @@ module Oversmoothing
 
 using Base.Threads: @threads, nthreads
 using LinearAlgebra
-using LinearAlgebra: checksquare
+using LinearAlgebra: checksquare, ishermitian
 using Statistics
 using Random
 using Random: AbstractRNG, default_rng, rand!, randn!, randsubseq
@@ -20,7 +20,6 @@ using IntervalArithmetic: interval, inf, sup
 using LaTeXStrings
 using Latexify: latexify
 using LogExpFunctions: logsumexp
-using MathTeXEngine: MathTeXEngine
 using MonteCarloMeasurements: Particles
 using OffsetArrays: OffsetArray, OffsetMatrix, OffsetVector, Origin
 using OhMyThreads: OhMyThreads, tmap, tmapreduce
@@ -40,7 +39,6 @@ include("sbm.jl")
 include("embeddings.jl")
 include("first_layer.jl")
 include("random_walk.jl")
-include("depth.jl")
 
 include("plot.jl")
 
