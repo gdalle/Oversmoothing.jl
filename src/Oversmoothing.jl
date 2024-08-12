@@ -26,7 +26,7 @@ using OffsetArrays: OffsetArray, OffsetMatrix, OffsetVector, Origin
 using OhMyThreads: OhMyThreads, tmap, tmapreduce
 using QuadGK: QuadGK
 using StableRNGs: StableRNGs
-using StaticArrays: SVector
+using StaticArrays: SVector, SMatrix
 using StatsBase: StatsBase, entropy, kldivergence, sample
 using StatsFuns: binompdf, log2π, normpdf, normlogpdf
 
@@ -45,7 +45,7 @@ include("plot.jl")
 
 ## exports
 
-export MultivariateNormal
+export MultivariateNormal, UnivariateNormal
 export Mixture
 export StochasticBlockModel, SBM
 export ContextualStochasticBlockModel, CSBM

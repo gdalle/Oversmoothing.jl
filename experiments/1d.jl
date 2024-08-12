@@ -16,15 +16,6 @@ using StaticArrays
 BLAS.set_num_threads(1)
 rng = default_rng()
 
-
-using MakieTeX
-A = rand(2, 2)
-As = latexify(A; env=:inline)
-
-fig = Figure()
-LTeX(fig[1, 1], L"Hello %$As")
-fig
-
 ## Instance
 
 sbm = SBM(100, 3, 0.02, 0.01)

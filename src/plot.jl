@@ -22,7 +22,7 @@ Connectivities: %$(latexify(sbm.connectivities; env=:inline))
         LTeX(
             fig[0, 2],
             L"""
-    Community sizes: %$(latexify(sbm.sizes'; env=:inline))\\
+    Sizes: %$(latexify(sbm.sizes'; env=:inline))\\
     Means: %$(latexify(only.(mean.(features))'; env=:inline))\\
     Variances: %$(latexify(only.(cov.(features))'; env=:inline))
 """;
@@ -72,9 +72,9 @@ function plot_2d(csbm::CSBM, histograms::Matrix{<:Matrix}, densities::Matrix{<:M
     with_theme(theme_latexfonts()) do
         fig = Figure(; size=(700, 200 * (L + 1)))
         all_axes = Axis[]
-        Label(fig[-2, 1:C], "Contextual SBM in 2D"; tellwidth=false, fontsize=20)
+        Label(fig[-2, 1:C+1], "Contextual SBM in 2D"; tellwidth=false, fontsize=20)
         for c in 1:C
-            Label(fig[-1, c], "Community $c ($(sbm.sizes[c]))"; tellwidth=false)
+            Label(fig[-1, c], "Community $c"; tellwidth=false)
             LTeX(
                 fig[0, c],
                 L"""
@@ -90,6 +90,10 @@ function plot_2d(csbm::CSBM, histograms::Matrix{<:Matrix}, densities::Matrix{<:M
         LTeX(
             fig[-1:0, C + 1],
             L"""
+    Sizes: %$(latexify(sbm.sizes'; env=:inline))
+
+    \medskip
+
     Connectivities:
 
     \medskip
@@ -133,7 +137,7 @@ function plot_2d(csbm::CSBM, histograms::Matrix{<:Matrix}, densities::Matrix{<:M
                     yrange,
                     ls[l + 1, c];
                     colorrange=(lmin, lmax),
-                    colormap=:plasma,
+                    colormap=:grays,
                     levels=15,
                     linewidth=2,
                 )

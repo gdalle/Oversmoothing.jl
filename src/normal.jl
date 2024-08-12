@@ -10,6 +10,10 @@ function MultivariateNormal(μ, Σ)
     return MultivariateNormal(μ, Σ, inv(Σ), logdet(Σ))
 end
 
+function UnivariateNormal(μ, σ²)
+    return MultivariateNormal(SVector(μ), SMatrix{1,1}(σ²))
+end
+
 @inline DensityInterface.DensityKind(::MultivariateNormal) = DensityInterface.HasDensity()
 
 Base.length(g::MultivariateNormal) = length(g.μ)
