@@ -1,4 +1,3 @@
-using LinearAlgebra
 using Oversmoothing
 using StableRNGs
 using Statistics
@@ -9,11 +8,15 @@ rng = StableRNG(63)
 sbm = SBM(99, 3, 0.002, 0.001)
 
 features = [
-    MultivariateNormal(SVector(-1.0), SMatrix{1,1}(0.03)),  #
-    MultivariateNormal(SVector(0.0), SMatrix{1,1}(0.01)),  #
-    MultivariateNormal(SVector(+1.0), SMatrix{1,1}(0.02)),  #
+    UnivariateNormal(-1.0, 0.03), UnivariateNormal(0.0, 0.01), UnivariateNormal(+1.0, 0.02)
 ]
 
 csbm = CSBM(sbm, features)
 
-random_walk_errors(rng, csbm; nb_layers=L, nb_graphs=100, nb_samples=100)
+densities = random_walk_densities(rng, csbm; nb_layers=7, nb_graphs=4);
+@test size(densities) == (8, 3)
+
+error_trajectories = random_walk_error_trajectories(
+    rng, csbm; nb_trajectories=2, nb_layers=7, nb_graphs=4, nb_samples=5
+);
+@test size(error_trajectories) == (8, 2)

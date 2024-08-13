@@ -1,17 +1,14 @@
-MYTHEME = merge(
-    theme_latexfonts(),
-    Theme(;
-        palette=(
-            color=Makie.wong_colors(),
-            linestyle=[:solid, :dash, :dashdot, :dot],
-            marker=[:circle, :xcross, :rect, :star5, :utriangle],
-        ),
-        Scatter=(cycle=Cycle([:color, :linestyle, :marker]; covary=true),),
-        ScatterLines=(cycle=Cycle([:color, :linestyle, :marker]; covary=true),),
-    ),
-)
+module OversmoothingCairoMakieExt
 
-function plot_1d(csbm::CSBM, histograms::Matrix{<:Matrix}, densities::Matrix{<:Mixture};)
+using CairoMakie
+using Colors
+using DensityInterface
+using StaticArrays
+using Oversmoothing
+
+function Oversmoothing.plot_1d(
+    csbm::CSBM, histograms::Matrix{<:Matrix}, densities::Matrix{<:Mixture}; theme
+)
     (; sbm, features) = csbm
     L = size(densities, 1) - 1
     C = nb_communities(sbm)
@@ -21,28 +18,13 @@ function plot_1d(csbm::CSBM, histograms::Matrix{<:Matrix}, densities::Matrix{<:M
 
     colors = distinguishable_colors(C, [RGB(1, 1, 1), RGB(0, 0, 0)]; dropseed=true)
 
-    with_theme(MYTHEME) do
+    with_theme(theme) do
         fig = Figure(; size=(600, 200 * (L + 1)))
         axes = Axis[]
-        Label(fig[-1, 1:2], "Contextual SBM in 1D"; tellwidth=false, fontsize=20)
-        LTeX(
-            fig[0, 1],
-            L"""
-Connectivities: %$(latexify(sbm.connectivities; env=:inline))
-""";
-            tellwidth=false,
-        )
-        LTeX(
-            fig[0, 2],
-            L"""
-    Sizes: %$(latexify(sbm.sizes'; env=:inline))\\
-    Means: %$(latexify(only.(mean.(features))'; env=:inline))\\
-    Variances: %$(latexify(only.(cov.(features))'; env=:inline))
-""";
-            tellwidth=false,
-        )
+        Label(fig[0, 1], "Contextual SBM in 1D"; tellwidth=false, fontsize=20)
         for l in 0:L
-            ax = Axis(fig[l + 1, 1:2]; title="Layer $l")
+            Label(fig[l + 1, 2], "Layer $l"; tellheight=false, font=:bold, rotation=1.5π)
+            ax = Axis(fig[l + 1, 1]; xticksvisible=l == L, xticklabelsvisible=l == L)
             push!(axes, ax)
             linkxaxes!(ax, axes[1])
             for c in 1:C
@@ -67,7 +49,9 @@ Connectivities: %$(latexify(sbm.connectivities; env=:inline))
     end
 end
 
-function plot_2d(csbm::CSBM, histograms::Matrix{<:Matrix}, densities::Matrix{<:Mixture};)
+function Oversmoothing.plot_2d(
+    csbm::CSBM, histograms::Matrix{<:Matrix}, densities::Matrix{<:Mixture}; theme
+)
     (; sbm, features) = csbm
     C = nb_communities(sbm)
     L = size(histograms, 1) - 1
@@ -82,41 +66,17 @@ function plot_2d(csbm::CSBM, histograms::Matrix{<:Matrix}, densities::Matrix{<:M
 
     colors = distinguishable_colors(C, [RGB(1, 1, 1), RGB(0, 0, 0)]; dropseed=true)
 
-    with_theme(MYTHEME) do
+    with_theme(theme) do
         fig = Figure(; size=(700, 200 * (L + 1)))
         all_axes = Axis[]
-        Label(fig[-2, 1:(C + 1)], "Contextual SBM in 2D"; tellwidth=false, fontsize=20)
+        Label(fig[-1, 1:C], "Contextual SBM in 2D"; tellwidth=false, fontsize=20)
         for c in 1:C
-            Label(fig[-1, c], "Community $c"; tellwidth=false)
-            LTeX(
-                fig[0, c],
-                L"""
-    Mean: %$(latexify(mean(features[c]); env=:inline))
-
-    \medskip
-
-    Cov: %$(latexify(cov(features[c]); env=:inline))
-""";
-                tellwidth=false,
-            )
+            Label(fig[0, c], "Community $c"; tellwidth=false)
         end
-        LTeX(
-            fig[-1:0, C + 1],
-            L"""
-    Sizes: %$(latexify(sbm.sizes'; env=:inline))
-
-    \medskip
-
-    Connectivities:
-
-    \medskip
-
-    %$(latexify(sbm.connectivities; env=:inline))
-""";
-            tellwidth=true,
-        )
         for l in 0:L
-            Label(fig[l + 1, C + 1], "Layer $l"; tellheight=false, font=:bold)
+            Label(
+                fig[l + 1, C + 1], "Layer $l"; tellheight=false, font=:bold, rotation=1.5π
+            )
             axes = [
                 Axis(
                     fig[l + 1, c];
@@ -155,11 +115,10 @@ function plot_2d(csbm::CSBM, histograms::Matrix{<:Matrix}, densities::Matrix{<:M
                     linewidth=2,
                 )
             end
-            # Colorbar(
-            #     fig[l+1, C + 1]; limits=(lmin, lmax), colormap=:plasma, label="Layer $l density"
-            # )
         end
         resize_to_layout!(fig)
         return fig
     end
+end
+
 end

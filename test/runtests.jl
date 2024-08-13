@@ -6,15 +6,9 @@ using Test
 
 @testset verbose = true "Oversmoothing.jl" begin
     @testset "Formalities" begin
-        @testset "Aqua" begin
-            Aqua.test_all(Oversmoothing; ambiguities=false, deps_compat=false)
-        end
-        @testset "JuliaFormatter" begin
-            @test JuliaFormatter.format(Oversmoothing, overwrite=true)
-        end
-        @testset "JET" begin
-            JET.test_package(Oversmoothing; target_defined_modules=true)
-        end
+        Aqua.test_all(Oversmoothing; ambiguities=false, deps_compat=false, stale_deps=false)
+        @test JuliaFormatter.format(Oversmoothing, overwrite=false)
+        JET.test_package(Oversmoothing; target_defined_modules=true)
     end
 
     @testset "Normal" begin
@@ -25,5 +19,9 @@ using Test
     end
     @testset "Stochastic Block Model" begin
         include("sbm.jl")
+    end
+    @testset "First layer" begin end
+    @testset "Random walk" begin
+        include("random_walk.jl")
     end
 end

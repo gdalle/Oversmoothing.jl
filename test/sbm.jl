@@ -23,7 +23,22 @@ A = [B[1, 1] B[1, 2] B[1, 3]; B[2, 1] B[2, 2] B[2, 3]]
     @test issymmetric(A)
     @test all(iszero, Diagonal(A))
     @test mean(A[1:N, 1:N]) ≈ Q[1, 1] rtol = 1e-1
-    @test mean(A[1:N, N:(3N)]) ≈ Q[1, 2] rtol = 1e-1
-    @test mean(A[N:(3N), 1:N]) ≈ Q[2, 1] rtol = 1e-1
-    @test mean(A[N:(3N), N:(3N)]) ≈ Q[2, 2] rtol = 1e-1
+    @test mean(A[1:N, (N + 1):(3N)]) ≈ Q[1, 2] rtol = 1e-1
+    @test mean(A[(N + 1):(3N), 1:N]) ≈ Q[2, 1] rtol = 1e-1
+    @test mean(A[(N + 1):(3N), (N + 1):(3N)]) ≈ Q[2, 2] rtol = 1e-1
+end
+
+@testset "3 communities" begin
+    N = 1000
+    sbm = SBM(3N, 3, 0.03, 0.01)
+    A = @inferred rand(rng, sbm)
+    W = @inferred Oversmoothing.random_walk(A)
+
+    @test nb_vertices(sbm) == 3N
+    @test community_size.(Ref(sbm), 1:3) == [N, N, N]
+    @test community_of_vertex.(Ref(sbm), 1:(3N)) == vcat(fill(1, N), fill(2, N), fill(3, N))
+    @test issymmetric(A)
+    @test all(iszero, Diagonal(A))
+    @test mean(A[1:N, 1:N]) ≈ 0.03 rtol = 1e-1
+    @test mean(A[1:N, (N + 1):(2N)]) ≈ 0.01 rtol = 1e-1
 end

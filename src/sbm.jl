@@ -22,6 +22,7 @@ function StochasticBlockModel(
     connectivity_in::Real,
     connectivity_out::Real,
 )
+    @assert total_size % nb_communities == 0
     sizes = fill(total_size ÷ nb_communities, nb_communities)
     connectivities = fill(connectivity_out, nb_communities, nb_communities)
     for c in 1:nb_communities

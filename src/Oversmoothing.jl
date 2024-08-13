@@ -4,7 +4,7 @@ module Oversmoothing
 
 using Base.Threads: @threads, nthreads
 using LinearAlgebra
-using LinearAlgebra: checksquare, ishermitian
+using LinearAlgebra: LowerTriangular, checksquare, ishermitian
 using Statistics
 using Random
 using Random: AbstractRNG, default_rng, rand!, randn!, randsubseq
@@ -12,23 +12,15 @@ using SparseArrays
 
 ## other deps
 
-using CairoMakie
-using Colors
 using DensityInterface: DensityInterface, logdensityof, densityof
 using HCubature: HCubature
-using IntervalArithmetic: interval, inf, sup
-using LaTeXStrings
-using Latexify: latexify
 using LogExpFunctions: logsumexp
-using MakieTeX
-using MonteCarloMeasurements: Particles, pmean, pstd
-using OffsetArrays: OffsetArray, OffsetMatrix, OffsetVector, Origin
-using OhMyThreads: OhMyThreads, tforeach, tmap, tmapreduce
+using MonteCarloMeasurements: Particles, pmean
+using OhMyThreads: OhMyThreads, tforeach
 using QuadGK: QuadGK
-using StableRNGs: StableRNGs
-using StaticArrays: SVector, SMatrix
-using StatsBase: StatsBase, entropy, kldivergence, sample
-using StatsFuns: binompdf, log2π, normpdf, normlogpdf
+using StaticArrays: SVector, SMatrix, @SVector
+using StatsBase: StatsBase, sample
+using StatsFuns: binompdf, log2π
 
 ## includes
 
@@ -40,12 +32,14 @@ include("sbm.jl")
 include("embeddings.jl")
 include("first_layer.jl")
 include("random_walk.jl")
+include("depth.jl")
 
-include("plot.jl")
+function plot_1d end
+function plot_2d end
 
 ## exports
 
-export MultivariateNormal, UnivariateNormal
+export MultivariateNormal, UnivariateNormal, BivariateNormal
 export Mixture
 export StochasticBlockModel, SBM
 export ContextualStochasticBlockModel, CSBM
@@ -53,8 +47,9 @@ export nb_vertices, nb_communities
 export community_size, community_range, community_of_vertex
 export embeddings
 export error_quadrature, error_montecarlo
-export first_layer_mixtures
-export random_walk_mixtures, random_walk_errors, best_depth
+export first_layer_densities
+export random_walk_densities, random_walk_error_trajectories
+export error_by_depth, optimal_depth
 export plot_1d, plot_2d
 
 end # module Oversmoothing
