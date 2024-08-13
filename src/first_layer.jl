@@ -27,5 +27,5 @@ function first_layer_densities(csbm::CSBM{C}; max_neighbors=nb_vertices(csbm.sbm
     end
 
     densities = [Mixture(MultivariateNormal.(μ[c0], Σ[c0]), w[c0]) for c0 in 1:C]
-    return compress.(densities)
+    return densities
 end

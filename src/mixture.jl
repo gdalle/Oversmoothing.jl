@@ -57,19 +57,3 @@ function DensityInterface.logdensityof(mix::Mixture, x)
     d, w = distributions(mix), weights(mix)
     return logsumexp(log(w[i]) + logdensityof(d[i], x) for i in eachindex(d, w))
 end
-
-function compress(mix::Mixture)
-    d, w = distributions(mix), weights(mix)
-    to_keep = trues(length(mix))
-    for j in eachindex(d, w)
-        for i in eachindex(d, w)
-            i < j || continue
-            if isapprox(d[i], d[j]) && to_keep[i]
-                w[i] += w[j]
-                to_keep[j] = false
-                break
-            end
-        end
-    end
-    return Mixture(d[to_keep], w[to_keep])
-end

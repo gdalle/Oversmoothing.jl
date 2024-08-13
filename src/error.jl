@@ -28,13 +28,13 @@ function error_montecarlo(rng::AbstractRNG, mix::Mixture; nb_samples=100)
     return 1 - Particles(precision_samples)
 end
 
-function error_quadrature_1d(mix::Mixture; bound=10, kwargs...)
+function error_quadrature_1d(mix::Mixture; bound=100, kwargs...)
     bp = BayesPrecision(mix, false)
     precision, quad_error = QuadGK.quadgk(bp, -bound, bound; kwargs...)
     return 1 - precision
 end
 
-function error_quadrature_nd(mix::Mixture; bound=10, kwargs...)
+function error_quadrature_nd(mix::Mixture; bound=100, kwargs...)
     bp = BayesPrecision(mix, false)
     precision, cub_error = HCubature.hcubature(
         bp, -fill(bound, length(mix)), +fill(bound, length(mix)); kwargs...

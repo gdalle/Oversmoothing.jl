@@ -49,6 +49,7 @@ export embeddings
 export error_quadrature, error_montecarlo
 export first_layer_densities
 export random_walk_densities, random_walk_error_trajectories
+export error_zeroth_layer, error_first_layer
 export error_by_depth, optimal_depth
 export plot_1d, plot_2d
 
