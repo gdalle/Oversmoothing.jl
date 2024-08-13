@@ -18,7 +18,7 @@ begin
     using OhMyThreads
     using Oversmoothing
     using PlutoUI
-	using ProgressLogging
+    using ProgressLogging
     using Random
     using StableRNGs
     using StaticArrays
@@ -47,20 +47,20 @@ md"""
 
 # ╔═╡ 8b80f3b5-4fdd-48c8-9f0d-52e35535a653
 begin
-	MYTHEME = merge(
-	    theme_latexfonts(),
-	    Theme(;
-	        palette=(
-	            color=Makie.wong_colors(),
-	            linestyle=[:solid, :dash, :dashdot, :dot],
-	            marker=[:circle, :xcross, :rect, :star5, :utriangle],
-	        ),
-	        Scatter=(cycle=Cycle([:color, :linestyle, :marker]; covary=true),),
-	        ScatterLines=(cycle=Cycle([:color, :linestyle, :marker]; covary=true),),
-	    ),
-	)
-	
-	Makie.set_theme!(MYTHEME)
+    MYTHEME = merge(
+        theme_latexfonts(),
+        Theme(;
+            palette=(
+                color=Makie.wong_colors(),
+                linestyle=[:solid, :dash, :dashdot, :dot],
+                marker=[:circle, :xcross, :rect, :star5, :utriangle],
+            ),
+            Scatter=(cycle=Cycle([:color, :linestyle, :marker]; covary=true),),
+            ScatterLines=(cycle=Cycle([:color, :linestyle, :marker]; covary=true),),
+        ),
+    )
+
+    Makie.set_theme!(MYTHEME)
 end
 
 # ╔═╡ efa56462-c94c-4b21-96e7-88ac5cfa9be1
@@ -89,16 +89,16 @@ end
 
 # ╔═╡ c5a94b08-78dc-4dd6-96c2-7ebe488205d7
 let
-	C = 4
-	csbm = LinearCSBM1d(; C=C, din=3, dout=2, σ=0.1, N=100)
-	
-	fig = Figure()
-	ax = Axis(fig[1, 1])
-	for c in 1:C
-		x = [rand(rng, csbm.features[c]) for _ in 1:100]
-		hist!(ax, first.(x))
-	end
-	fig
+    C = 4
+    csbm = LinearCSBM1d(; C=C, din=3, dout=2, σ=0.1, N=100)
+
+    fig = Figure()
+    ax = Axis(fig[1, 1])
+    for c in 1:C
+        x = [rand(rng, csbm.features[c]) for _ in 1:100]
+        hist!(ax, first.(x))
+    end
+    fig
 end
 
 # ╔═╡ 09ef5298-50fa-40f5-978d-24c8db4ff6e9
@@ -114,16 +114,16 @@ end
 
 # ╔═╡ c1a99529-cf54-4ff7-ae44-4bdfce781a07
 let
-	C = 10
-	csbm = SymmetricCSBM2d(; C=C, din=3, dout=2, σ=0.1, N=100)
-	
-	fig = Figure()
-	ax = Axis(fig[1, 1], aspect=1)
-	for c in 1:C
-		x = [rand(rng, csbm.features[c]) for _ in 1:100]
-		scatter!(ax, first.(x), last.(x))
-	end
-	fig
+    C = 10
+    csbm = SymmetricCSBM2d(; C=C, din=3, dout=2, σ=0.1, N=100)
+
+    fig = Figure()
+    ax = Axis(fig[1, 1]; aspect=1)
+    for c in 1:C
+        x = [rand(rng, csbm.features[c]) for _ in 1:100]
+        scatter!(ax, first.(x), last.(x))
+    end
+    fig
 end
 
 # ╔═╡ 38ddf907-2f83-4a43-89bb-f65356b6445b
@@ -189,41 +189,43 @@ md"""
 
 # ╔═╡ c5ddce4c-21ae-4eb9-a411-a576ac8f766d
 din_dout_error0, din_dout_error1_vals = let
-	C = 2
-	σ = 2.0
+    C = 2
+    σ = 2.0
 
-	din_vals = 0:0.2:10
-	dout_vals = 0:0.2:10
-	
-	error0 = error_zeroth_layer(LinearCSBM1d(; C, din=0, dout=0, σ); rtol=1e-4)
-	error1_vals = fill(NaN, length(din_vals), length(dout_vals))
-	
-	@progress for i in eachindex(din_vals), j in eachindex(dout_vals)
-		din, dout = din_vals[i], dout_vals[j]
-		csbm = LinearCSBM1d(; C, din, dout, σ)
-		error1_vals[i, j] = error_first_layer(
-			csbm;
-			max_neighbors=ceil(Int, 30(din+dout)),
-			rtol=1e-4
-		)
-	end
-	error0, error1_vals 
+    din_vals = 0:0.2:10
+    dout_vals = 0:0.2:10
+
+    error0 = error_zeroth_layer(LinearCSBM1d(; C, din=0, dout=0, σ); rtol=1e-4)
+    error1_vals = fill(NaN, length(din_vals), length(dout_vals))
+
+    @progress for i in eachindex(din_vals), j in eachindex(dout_vals)
+        din, dout = din_vals[i], dout_vals[j]
+        csbm = LinearCSBM1d(; C, din, dout, σ)
+        error1_vals[i, j] = error_first_layer(
+            csbm; max_neighbors=ceil(Int, 30(din + dout)), rtol=1e-4
+        )
+    end
+    error0, error1_vals
 end
 
 # ╔═╡ 2b272855-8b04-47d0-b2c5-c672ab633f79
 let
-	din_vals = 0:0.2:10
-	dout_vals = 0:0.2:10
-	err_diff_vals = din_dout_error1_vals .- din_dout_error0
-	
-	fig = Figure()
-	ax = Axis(fig[1, 1], aspect=1, xlabel=L"d_{in}", ylabel=L"d_{out}")
-	hm = heatmap!(
-		ax, din_vals, dout_vals, err_diff_vals,
-		colormap=:balance, colorrange=(-maximum(abs, err_diff_vals),maximum(abs, err_diff_vals))
-	)
-	Colorbar(fig[1, 2], hm, label=L"error difference after $1$ layer")
-	fig
+    din_vals = 0:0.2:10
+    dout_vals = 0:0.2:10
+    err_diff_vals = din_dout_error1_vals .- din_dout_error0
+
+    fig = Figure()
+    ax = Axis(fig[1, 1]; aspect=1, xlabel=L"d_{in}", ylabel=L"d_{out}")
+    hm = heatmap!(
+        ax,
+        din_vals,
+        dout_vals,
+        err_diff_vals;
+        colormap=:balance,
+        colorrange=(-maximum(abs, err_diff_vals), maximum(abs, err_diff_vals)),
+    )
+    Colorbar(fig[1, 2], hm; label=L"error difference after $1$ layer")
+    fig
 end
 
 # ╔═╡ c38a15fc-ba48-4c01-b433-c18671435598
@@ -233,45 +235,40 @@ md"""
 
 # ╔═╡ 56833a00-b483-4d82-8eae-1825783668d2
 C_σ_error0_vals, C_σ_error1_vals = let
+    C_vals = 2:4
+    σ_vals = 0.05:0.05:3.0
 
-	C_vals = 2:4
-	σ_vals = 0.05:0.05:3.0
-	
-	error0_vals = fill(NaN, length(C_vals), length(σ_vals))
-	error1_vals = fill(NaN, length(C_vals), length(σ_vals))
-	
-	@progress for i in eachindex(C_vals), j in eachindex(σ_vals)
-		C = C_vals[i]
-		σ = σ_vals[j]
-		
-		csbm = LinearCSBM1d(; C, din=4, dout=1, σ, N=60)
-		
-		error0_vals[i, j] = error_zeroth_layer(
-			csbm; rtol=1e-4
-		)
-		error1_vals[i, j] = error_first_layer(
-			csbm; max_neighbors=20, rtol=1e-4
-		)
-	end
+    error0_vals = fill(NaN, length(C_vals), length(σ_vals))
+    error1_vals = fill(NaN, length(C_vals), length(σ_vals))
 
-	error0_vals, error1_vals 
+    @progress for i in eachindex(C_vals), j in eachindex(σ_vals)
+        C = C_vals[i]
+        σ = σ_vals[j]
+
+        csbm = LinearCSBM1d(; C, din=4, dout=1, σ, N=60)
+
+        error0_vals[i, j] = error_zeroth_layer(csbm; rtol=1e-4)
+        error1_vals[i, j] = error_first_layer(csbm; max_neighbors=20, rtol=1e-4)
+    end
+
+    error0_vals, error1_vals
 end
 
 # ╔═╡ ad02d145-9c0e-447f-adb1-535d3f1d46cd
 let
-	C_vals = 2:4
-	σ_vals = 0.05:0.05:3.0
+    C_vals = 2:4
+    σ_vals = 0.05:0.05:3.0
 
-	err_diff_vals = C_σ_error1_vals - C_σ_error0_vals
+    err_diff_vals = C_σ_error1_vals - C_σ_error0_vals
 
-	fig = Figure()
-	ax = Axis(fig[1, 1], xlabel=L"\sigma", ylabel="error difference after 1 layer")
-	hlines!(ax, [0.0], color=:black, linewidth=3)
-	for (k, C) in enumerate(C_vals)
-		scatterlines!(σ_vals, err_diff_vals[k, :], label=L"C=%$C")
-	end
-	Legend(fig[1, 2], ax)
-	fig
+    fig = Figure()
+    ax = Axis(fig[1, 1]; xlabel=L"\sigma", ylabel="error difference after 1 layer")
+    hlines!(ax, [0.0]; color=:black, linewidth=3)
+    for (k, C) in enumerate(C_vals)
+        scatterlines!(σ_vals, err_diff_vals[k, :]; label=L"C=%$C")
+    end
+    Legend(fig[1, 2], ax)
+    fig
 end
 
 # ╔═╡ 9a881c91-fffb-416a-beb9-ad5985063273
@@ -339,9 +336,8 @@ md"""
 # ╔═╡ 9ba113e6-b1bf-4f05-a185-2b6e77f453ab
 let
     csbm = CSBM(
-		SBM(100, 2, 0.05, 0.05),
-		[UnivariateNormal(-1.0, 1.0), UnivariateNormal(+1.0, 1.0)]
-	)
+        SBM(100, 2, 0.05, 0.05), [UnivariateNormal(-1.0, 1.0), UnivariateNormal(+1.0, 1.0)]
+    )
 
     nb_layers = 10
 

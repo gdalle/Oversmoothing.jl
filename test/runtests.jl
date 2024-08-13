@@ -7,7 +7,7 @@ using Test
 @testset verbose = true "Oversmoothing.jl" begin
     @testset "Formalities" begin
         Aqua.test_all(Oversmoothing; ambiguities=false, deps_compat=false, stale_deps=false)
-        @test JuliaFormatter.format(Oversmoothing, overwrite=false)
+        @test JuliaFormatter.format(Oversmoothing, overwrite=true)
         JET.test_package(Oversmoothing; target_defined_modules=true)
     end
 
