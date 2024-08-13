@@ -21,9 +21,9 @@ using LaTeXStrings
 using Latexify: latexify
 using LogExpFunctions: logsumexp
 using MakieTeX
-using MonteCarloMeasurements: Particles
+using MonteCarloMeasurements: Particles, pmean, pstd
 using OffsetArrays: OffsetArray, OffsetMatrix, OffsetVector, Origin
-using OhMyThreads: OhMyThreads, tmap, tmapreduce
+using OhMyThreads: OhMyThreads, tforeach, tmap, tmapreduce
 using QuadGK: QuadGK
 using StableRNGs: StableRNGs
 using StaticArrays: SVector, SMatrix

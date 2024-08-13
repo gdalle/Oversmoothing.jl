@@ -80,3 +80,17 @@ struct ContextualStochasticBlockModel{C,T,F}
 end
 
 const CSBM = ContextualStochasticBlockModel
+
+function Base.vcat(sbm1::SBM, sbm2::SBM)
+    C1, C2 = nb_communities(sbm1), nb_communities(sbm2)
+    new_sizes = vcat(sbm1.sizes, sbm2.sizes)
+    new_connectivities = [
+        sbm1.connectivities zeros(C1, C2)
+        zeros(C2, C1) sbm2.connectivities
+    ]
+    return SBM(new_sizes, new_connectivities)
+end
+
+function Base.vcat(csbm1::CSBM, csbm2::CSBM)
+    return CSBM(vcat(csbm1.sbm, csbm2.sbm), vcat(csbm1.features, csbm2.features))
+end

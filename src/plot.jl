@@ -1,12 +1,14 @@
-MYTHEME = Theme(;
-	theme_latexfonts()...,
-	palette = (
-		color=Makie.wong_colors(),
-		linestyle=[:solid, :dash, :dashdot, :dot],
-		marker=[:circle, :xcross, :rect, :star5, :utriangle],
-	),
-	Scatter = (cycle = Cycle([:color, :linestyle, :marker], covary=true),),
-	ScatterLines = (cycle = Cycle([:color, :linestyle, :marker], covary=true),),
+MYTHEME = merge(
+    theme_latexfonts(),
+    Theme(;
+        palette=(
+            color=Makie.wong_colors(),
+            linestyle=[:solid, :dash, :dashdot, :dot],
+            marker=[:circle, :xcross, :rect, :star5, :utriangle],
+        ),
+        Scatter=(cycle=Cycle([:color, :linestyle, :marker]; covary=true),),
+        ScatterLines=(cycle=Cycle([:color, :linestyle, :marker]; covary=true),),
+    ),
 )
 
 function plot_1d(csbm::CSBM, histograms::Matrix{<:Matrix}, densities::Matrix{<:Mixture};)
@@ -83,7 +85,7 @@ function plot_2d(csbm::CSBM, histograms::Matrix{<:Matrix}, densities::Matrix{<:M
     with_theme(MYTHEME) do
         fig = Figure(; size=(700, 200 * (L + 1)))
         all_axes = Axis[]
-        Label(fig[-2, 1:C+1], "Contextual SBM in 2D"; tellwidth=false, fontsize=20)
+        Label(fig[-2, 1:(C + 1)], "Contextual SBM in 2D"; tellwidth=false, fontsize=20)
         for c in 1:C
             Label(fig[-1, c], "Community $c"; tellwidth=false)
             LTeX(
