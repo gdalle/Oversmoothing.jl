@@ -13,12 +13,11 @@ using SparseArrays
 ## other deps
 
 using DensityInterface: DensityInterface, logdensityof, densityof
-using Flux: Flux, Dense, onehotbatch, relu, softmax
+using Flux: Flux, Adam, Dense, onehotbatch, relu, softmax
 using Flux.Losses: crossentropy
-using GraphNeuralNetworks: GNNChain, GNNGraph, SGConv
+using GraphNeuralNetworks: GNNChain, GNNGraph, GNNLayer, SGConv
 using HCubature: HCubature
 using LogExpFunctions: logsumexp
-using MonteCarloMeasurements: Particles, pmean
 using OhMyThreads: OhMyThreads, tforeach
 using QuadGK: QuadGK
 using StaticArrays: SVector, SMatrix, @SVector
@@ -28,6 +27,7 @@ using Zygote: gradient
 
 ## includes
 
+include("uncertainty.jl")
 include("normal.jl")
 include("mixture.jl")
 include("error.jl")
@@ -54,7 +54,7 @@ export embeddings
 export error_quadrature, error_montecarlo
 export first_layer_densities
 export random_walk_densities, random_walk_error_trajectories
-export gcn_error_trajectories
+export gnn_error_trajectories
 export error_zeroth_layer, error_first_layer
 export error_by_depth, optimal_depth
 export plot_1d, plot_2d

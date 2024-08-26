@@ -18,34 +18,34 @@ function (bp::BayesPrecision)(x)
     end
 end
 
-function error_montecarlo(rng::AbstractRNG, mix::Mixture; nb_samples=100)
+function error_montecarlo(rng::AbstractRNG, mix::Mixture; nb_samples)
     bp = BayesPrecision(mix, true)
     precision_samples = fill(NaN, nb_samples)
     for s in 1:nb_samples
         x = rand(rng, mix)
         precision_samples[s] = bp(x)
     end
-    return 1 - Particles(precision_samples)
+    return MonteCarloValue(1 .- precision_samples)
 end
 
-function error_quadrature_1d(mix::Mixture; bound=100, kwargs...)
+function error_quadrature_1d(mix::Mixture; rtol, bound=100, kwargs...)
     bp = BayesPrecision(mix, false)
     precision, quad_error = QuadGK.quadgk(bp, -bound, bound; kwargs...)
-    return 1 - precision
+    return IntervalValue(1 - precision, quad_error)
 end
 
-function error_quadrature_nd(mix::Mixture; bound=100, kwargs...)
+function error_quadrature_nd(mix::Mixture; rtol, bound=100, kwargs...)
     bp = BayesPrecision(mix, false)
     precision, cub_error = HCubature.hcubature(
         bp, -fill(bound, length(mix)), +fill(bound, length(mix)); kwargs...
     )
-    return 1 - precision
+    return IntervalValue(1 - precision, cub_error)
 end
 
-function error_quadrature(mix::Mixture; kwargs...)
+function error_quadrature(mix::Mixture; rtol, kwargs...)
     if length(mix) == 1
-        return error_quadrature_1d(mix; kwargs...)
+        return error_quadrature_1d(mix; rtol, kwargs...)
     else
-        return error_quadrature_nd(mix; kwargs...)
+        return error_quadrature_nd(mix; rtol, kwargs...)
     end
 end
