@@ -67,7 +67,7 @@ accuracies = @time accuracy_by_depth(
     nb_layers=5,
     nb_trajectories=5,
     nb_train_graphs=10,
-    nb_test_graphs=100,
+    nb_test_graphs=1000,
     nb_epochs=100,
     learning_rate=1e-1,
     batch_size=10,
@@ -79,5 +79,6 @@ errorbars!(
     value.(accuracies_th),
     uncertainty.(accuracies_th),
 )
+scatter!((0:(length(accuracies) - 1)), value.(accuracies))
 scatter!(0.1 .+ (0:(length(accuracies_th) - 1)), value.(accuracies_th))
 current_figure()
