@@ -9,12 +9,8 @@ function embeddings(rng::AbstractRNG, csbm::CSBM; nb_layers::Integer, nb_graphs:
 
     H_history = Array{T,4}(undef, G, L + 1, N, P)
     for g in 1:G
-        X = stack(1:N; dims=1) do v
-            c = community_of_vertex(sbm, v)
-            rand(rng, features[c])
-        end
+        A, X = rand(rng, csbm)
         copyto!(view(H_history, g, 1, :, :), X)
-        A = rand(rng, sbm)
         W = random_walk(A)
         H = copy(X)
         H_scratch = copy(H)
