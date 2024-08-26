@@ -6,6 +6,7 @@ using LinearAlgebra
 using Oversmoothing
 using Random
 using Statistics
+using SparseArrays
 
 rng = Random.default_rng()
 
@@ -20,27 +21,28 @@ csbm = CSBM(sbm, features)
 all_graphs = map(1:100) do _
     A, X = rand(rng, csbm)
     y = community_of_vertex.(Ref(sbm), 1:N)
-    g = GNNGraph(A; ndata=(; x=transpose(Float32.(X)), y=Flux.onehotbatch(y, 1:C)))
+    g = GNNGraph(
+        A;
+        graph_type=:sparse,
+        ndata=(; x=transpose(Float32.(X)), y=Flux.onehotbatch(y, 1:C)),
+    )
 end
 
 train_graphs = all_graphs[1:5]
 test_graphs = all_graphs[6:10]
 
-g = first(all_graphs)
-
-model = GNNChain(Dense(D => C), softmax)
-
-model(g, g.x)
-sum(model(g, g.x); dims=1)
-
 loss(model, g::GNNGraph) = crossentropy(model(g, g.x), g.y)
 loss(model, gs::Vector{<:GNNGraph}) = mean(loss(model, g) for g in gs)
 
-gradient(model -> loss(model, g), model)
+model = GNNChain(GCNConv(D => D, relu), Dense(D => C), softmax)
+
+g = first(all_graphs)
+model(g, g.x)
+sum(model(g, g.x); dims=1)
 
 opt = Flux.setup(Adam(1.0f-3), model);
 
-for epoch in 1:1000
+for epoch in 1:100
     for g in train_graphs
         grad = gradient(model -> loss(model, g), model)
         Flux.update!(opt, model, grad[1])
