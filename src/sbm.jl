@@ -53,6 +53,8 @@ function community_of_vertex(sbm::SBM, v::Integer)
     return 0
 end
 
+communities(sbm::SBM) = community_of_vertex.(Ref(sbm), 1:nb_vertices(sbm))
+
 function Random.rand(rng::AbstractRNG, sbm::SBM{C}) where {C}
     (; sizes, connectivities) = sbm
     B = Matrix{SparseMatrixCSC{Bool,Int}}(undef, C, C)
@@ -91,3 +93,5 @@ function Random.rand(rng::AbstractRNG, csbm::CSBM)
     end
     return A, X
 end
+
+feature_dimension(csbm::CSBM) = length(csbm.features[1])

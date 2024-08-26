@@ -35,10 +35,15 @@ loss(model, g::GNNGraph) = crossentropy(model(g, g.x), g.y)
 loss(model, gs::Vector{<:GNNGraph}) = mean(loss(model, g) for g in gs)
 
 model = GNNChain(GCNConv(D => D, relu), Dense(D => C), softmax)
+pred_model = GNNChain(model, x -> getindex.(argmax(x, dims=1), 1))
+
 
 g = first(all_graphs)
 model(g, g.x)
 sum(model(g, g.x); dims=1)
+
+pred_model(g, g.x)
+pred[argmax[pred]]
 
 opt = Flux.setup(Adam(1.0f-3), model);
 
