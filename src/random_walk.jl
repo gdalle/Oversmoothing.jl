@@ -62,7 +62,7 @@ function random_walk_densities(rng::AbstractRNG, csbm::CSBM; nb_layers, nb_graph
 end
 
 function random_walk_accuracy_trajectories(
-    rng::AbstractRNG, csbm::CSBM; nb_layers, nb_trajectories, nb_graphs, kwargs...
+    rng::AbstractRNG, csbm::CSBM; nb_layers, nb_trajectories, nb_graphs
 )
     (; sbm) = csbm
     (; sizes) = sbm
@@ -71,7 +71,9 @@ function random_walk_accuracy_trajectories(
         densities = random_walk_densities(rng, csbm; nb_layers, nb_graphs)
         for l in 0:nb_layers
             mixture = Mixture(densities[l + 1, :], sizes ./ sum(sizes))
-            accuracy_trajectories[l + 1, t] = value(accuracy_quadrature(mixture; kwargs...))
+            accuracy_trajectories[l + 1, t] = value(
+                accuracy_montecarlo(rng, mixture; nb_samples=nb_graphs * nb_vertices(sbm))
+            )
         end
     end
     return accuracy_trajectories

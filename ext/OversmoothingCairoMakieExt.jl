@@ -8,7 +8,7 @@ using Oversmoothing
 
 function Oversmoothing.plot_1d(
     csbm::CSBM,
-    histograms::Matrix{<:Matrix},
+    embeddings::Matrix{<:Matrix},
     densities::Matrix{<:Mixture};
     theme=theme_latexfonts(),
 )
@@ -16,7 +16,7 @@ function Oversmoothing.plot_1d(
     L = size(densities, 1) - 1
     C = nb_communities(sbm)
 
-    joint_histogram_scalar = mapreduce(vec, vcat, vec(histograms))
+    joint_histogram_scalar = mapreduce(vec, vcat, vec(embeddings))
     xrange = range(extrema(joint_histogram_scalar)..., 200)
 
     colors = distinguishable_colors(C, [RGB(1, 1, 1), RGB(0, 0, 0)]; dropseed=true)
@@ -33,7 +33,7 @@ function Oversmoothing.plot_1d(
             for c in 1:C
                 hist!(
                     ax,
-                    vec(histograms[l + 1, c]);
+                    vec(embeddings[l + 1, c]);
                     normalization=:pdf,
                     bins=50,
                     label="community $c",
@@ -54,15 +54,15 @@ end
 
 function Oversmoothing.plot_2d(
     csbm::CSBM,
-    histograms::Matrix{<:Matrix},
+    embeddings::Matrix{<:Matrix},
     densities::Matrix{<:Mixture};
     theme=theme_latexfonts(),
 )
     (; sbm, features) = csbm
     C = nb_communities(sbm)
-    L = size(histograms, 1) - 1
+    L = size(embeddings, 1) - 1
 
-    joint_histogram = reduce(vcat, vec(histograms))
+    joint_histogram = reduce(vcat, vec(embeddings))
     joint_histogram_x = joint_histogram[:, 1]
     joint_histogram_y = joint_histogram[:, 2]
     xrange = range(extrema(joint_histogram_x)..., 100)
@@ -104,8 +104,8 @@ function Oversmoothing.plot_2d(
             for c in 1:C
                 scatter!(
                     axes[c],
-                    histograms[l + 1, c][:, 1],
-                    histograms[l + 1, c][:, 2];
+                    embeddings[l + 1, c][:, 1],
+                    embeddings[l + 1, c][:, 2];
                     color=colors[c],
                     label="community $c",
                     alpha=1 / 10,

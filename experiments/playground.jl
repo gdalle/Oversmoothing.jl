@@ -5,7 +5,6 @@ using CairoMakie
 using DensityInterface
 using LaTeXStrings
 using LinearAlgebra
-using MonteCarloMeasurements
 using Oversmoothing
 using Random: default_rng
 using StableRNGs
@@ -28,6 +27,8 @@ L = 4
 histograms = @time embeddings(rng, csbm; nb_layers=L, nb_graphs=1000);
 # densities1 = first_layer_densities(csbm; max_neighbors=50);
 densities = @time random_walk_densities(rng, csbm; nb_layers=L, nb_graphs=100);
+
+logistic_regression_accuracy_trajectories(rng, csbm; nb_layers=L, nb_graphs=10)
 
 plot_1d(csbm, histograms, densities)
 
@@ -55,22 +56,11 @@ densities = random_walk_densities(rng, csbm; nb_layers=L, nb_graphs=20);
 plot_2d(csbm, histograms, densities)
 
 accuracies_th = accuracy_by_depth(
-    rng, csbm, Val(:randomwalk); nb_layers=5, nb_trajectories=10, nb_graphs=10, rtol=1e-3
+    rng, csbm, Val(:randomwalk); nb_layers=5, nb_trajectories=10, nb_graphs=20, rtol=1e-3
 )
 
-rng = StableRNG(63)
-
 accuracies = @time accuracy_by_depth(
-    rng,
-    csbm,
-    Val(:gnn);
-    nb_layers=5,
-    nb_trajectories=5,
-    nb_train_graphs=10,
-    nb_test_graphs=1000,
-    nb_epochs=100,
-    learning_rate=1e-1,
-    batch_size=10,
+    rng, csbm, Val(:logisticregression); nb_layers=5, nb_trajectories=10, nb_graphs=100
 )
 
 errorbars(0:(length(accuracies) - 1), value.(accuracies), uncertainty.(accuracies))

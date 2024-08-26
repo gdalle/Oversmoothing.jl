@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.42
+# v0.19.46
 
 using Markdown
 using InteractiveUtils
@@ -14,7 +14,6 @@ begin
     using DensityInterface
     using LaTeXStrings
     using LinearAlgebra
-    using MonteCarloMeasurements
     using OhMyThreads
     using Oversmoothing
     using PlutoUI
@@ -67,8 +66,7 @@ end
 begin
     nb_layers = 10
     nb_trajectories = 10
-    nb_graphs = 100
-    nb_samples = 200
+    nb_graphs = 5
 end
 
 # ╔═╡ 3c9cb7de-33eb-4422-ae50-95d5bf7484e0
@@ -76,21 +74,10 @@ md"""
 ## Toy CSBMs
 """
 
-# ╔═╡ 1ea22ce3-0423-4a80-9fbe-2b1d396f7f64
-function LinearCSBM1d(; C::Integer, din::Real, dout::Real, σ::Real, N::Integer=100)
-    p = din / N
-    q = dout / N
-    sbm = SBM(N, C, p, q)
-    μ = float.(1:C)
-    Σ = fill(σ^2, C)
-    features = UnivariateNormal.(μ, Σ)
-    return CSBM(sbm, features)
-end
-
 # ╔═╡ c5a94b08-78dc-4dd6-96c2-7ebe488205d7
 let
     C = 4
-    csbm = LinearCSBM1d(; C=C, din=3, dout=2, σ=0.1, N=100)
+    csbm = LinearCSBM1d(; C=C, din=3, dout=2, σ=0.1)
 
     fig = Figure()
     ax = Axis(fig[1, 1])
@@ -101,21 +88,10 @@ let
     fig
 end
 
-# ╔═╡ 09ef5298-50fa-40f5-978d-24c8db4ff6e9
-function SymmetricCSBM2d(; C::Integer, din::Real, dout::Real, σ::Real, N::Integer=100)
-    p = din / N
-    q = dout / N
-    sbm = SBM(N, C, p, q)
-    μ = [[cospi(2(c - 1) / C), sinpi(2(c - 1) / C)] for c in 1:C]
-    Σ = [Diagonal([σ^2, σ^2]) for c in 1:C]
-    features = BivariateNormal.(μ, Σ)
-    return CSBM(sbm, features)
-end
-
 # ╔═╡ c1a99529-cf54-4ff7-ae44-4bdfce781a07
 let
     C = 10
-    csbm = SymmetricCSBM2d(; C=C, din=3, dout=2, σ=0.1, N=100)
+    csbm = SymmetricCSBM2d(; C=C, din=3, dout=2, σ=0.1)
 
     fig = Figure()
     ax = Axis(fig[1, 1]; aspect=1)
@@ -148,10 +124,10 @@ let
 
     nb_layers = 2
     nb_graphs = 100
-    histograms = embeddings(rng, csbm; nb_layers, nb_graphs)
+    embeddings = empirical_embeddings(rng, csbm; nb_layers, nb_graphs)
     densities = random_walk_densities(rng, csbm; nb_layers, nb_graphs)
 
-    plot_1d(csbm, histograms, densities; theme=MYTHEME)
+    plot_1d(csbm, embeddings, densities; theme=MYTHEME)
 end
 
 # ╔═╡ 67987f14-d637-4f33-b3e9-91597290cb74
@@ -171,10 +147,10 @@ let
 
     nb_layers = 2
     nb_graphs = 100
-    histograms = embeddings(rng, csbm; nb_layers, nb_graphs)
+    embeddings = empirical_embeddings(rng, csbm; nb_layers, nb_graphs)
     densities = random_walk_densities(rng, csbm; nb_layers, nb_graphs)
 
-    plot_2d(csbm, histograms, densities; theme=MYTHEME)
+    plot_2d(csbm, embeddings, densities; theme=MYTHEME)
 end
 
 # ╔═╡ f53e238d-6f08-4da0-a5af-7278a7c64e5c
@@ -188,31 +164,31 @@ md"""
 """
 
 # ╔═╡ c5ddce4c-21ae-4eb9-a411-a576ac8f766d
-din_dout_error0, din_dout_error1_vals = let
+din_dout_accuracy0, din_dout_accuracy1_vals = let
     C = 2
     σ = 2.0
 
     din_vals = 0:0.2:10
     dout_vals = 0:0.2:10
 
-    error0 = error_zeroth_layer(LinearCSBM1d(; C, din=0, dout=0, σ); rtol=1e-4)
-    error1_vals = fill(NaN, length(din_vals), length(dout_vals))
+    accuracy0 = accuracy_zeroth_layer(LinearCSBM1d(; C, din=0, dout=0, σ); rtol=1e-4) |> value
+    accuracy1_vals = fill(NaN, length(din_vals), length(dout_vals))
 
     @progress for i in eachindex(din_vals), j in eachindex(dout_vals)
         din, dout = din_vals[i], dout_vals[j]
         csbm = LinearCSBM1d(; C, din, dout, σ)
-        error1_vals[i, j] = error_first_layer(
+        accuracy1_vals[i, j] = accuracy_first_layer(
             csbm; max_neighbors=ceil(Int, 30(din + dout)), rtol=1e-4
-        )
+        ) |> value
     end
-    error0, error1_vals
+    accuracy0, accuracy1_vals
 end
 
 # ╔═╡ 2b272855-8b04-47d0-b2c5-c672ab633f79
 let
     din_vals = 0:0.2:10
     dout_vals = 0:0.2:10
-    err_diff_vals = din_dout_error1_vals .- din_dout_error0
+    acc_diff_vals = din_dout_accuracy1_vals .- din_dout_accuracy0
 
     fig = Figure()
     ax = Axis(fig[1, 1]; aspect=1, xlabel=L"d_{in}", ylabel=L"d_{out}")
@@ -220,11 +196,11 @@ let
         ax,
         din_vals,
         dout_vals,
-        err_diff_vals;
+        acc_diff_vals;
         colormap=:balance,
-        colorrange=(-maximum(abs, err_diff_vals), maximum(abs, err_diff_vals)),
+        colorrange=(-maximum(abs, acc_diff_vals), maximum(abs, acc_diff_vals)),
     )
-    Colorbar(fig[1, 2], hm; label=L"error difference after $1$ layer")
+    Colorbar(fig[1, 2], hm; label=L"accuracy difference after $1$ layer")
     fig
 end
 
@@ -234,12 +210,12 @@ md"""
 """
 
 # ╔═╡ 56833a00-b483-4d82-8eae-1825783668d2
-C_σ_error0_vals, C_σ_error1_vals = let
+C_σ_accuracy0_vals, C_σ_accuracy1_vals = let
     C_vals = 2:4
     σ_vals = 0.05:0.05:3.0
 
-    error0_vals = fill(NaN, length(C_vals), length(σ_vals))
-    error1_vals = fill(NaN, length(C_vals), length(σ_vals))
+    accuracy0_vals = fill(NaN, length(C_vals), length(σ_vals))
+    accuracy1_vals = fill(NaN, length(C_vals), length(σ_vals))
 
     @progress for i in eachindex(C_vals), j in eachindex(σ_vals)
         C = C_vals[i]
@@ -247,11 +223,11 @@ C_σ_error0_vals, C_σ_error1_vals = let
 
         csbm = LinearCSBM1d(; C, din=4, dout=1, σ, N=60)
 
-        error0_vals[i, j] = error_zeroth_layer(csbm; rtol=1e-4)
-        error1_vals[i, j] = error_first_layer(csbm; max_neighbors=20, rtol=1e-4)
+        accuracy0_vals[i, j] = accuracy_zeroth_layer(csbm; rtol=1e-4) |> value
+        accuracy1_vals[i, j] = accuracy_first_layer(csbm; max_neighbors=20, rtol=1e-4) |> value
     end
 
-    error0_vals, error1_vals
+    accuracy0_vals, accuracy1_vals
 end
 
 # ╔═╡ ad02d145-9c0e-447f-adb1-535d3f1d46cd
@@ -259,10 +235,10 @@ let
     C_vals = 2:4
     σ_vals = 0.05:0.05:3.0
 
-    err_diff_vals = C_σ_error1_vals - C_σ_error0_vals
+    err_diff_vals = C_σ_accuracy1_vals - C_σ_accuracy0_vals
 
     fig = Figure()
-    ax = Axis(fig[1, 1]; xlabel=L"\sigma", ylabel="error difference after 1 layer")
+    ax = Axis(fig[1, 1]; xlabel=L"\sigma", ylabel="accuracy difference after 1 layer")
     hlines!(ax, [0.0]; color=:black, linewidth=3)
     for (k, C) in enumerate(C_vals)
         scatterlines!(σ_vals, err_diff_vals[k, :]; label=L"C=%$C")
@@ -289,14 +265,14 @@ let
     σ_vals = 0.2:0.4:2
 
     fig = Figure()
-    ax = Axis(fig[1, 1]; xlabel="depth", ylabel="error")
+    ax = Axis(fig[1, 1]; xlabel="depth", ylabel="accuracy")
     @progress for (k, σ) in enumerate(σ_vals)
         csbm = SymmetricCSBM2d(; C, din, dout, σ)
-        errors = error_by_depth(
-            rng, csbm; nb_layers, nb_trajectories, nb_graphs, nb_samples
+        accuracies = accuracy_by_depth(
+            rng, csbm; nb_layers, nb_trajectories, nb_graphs
         )
-        scatterlines!(ax, 0:nb_layers, pmean.(errors); label="$σ")
-        errorbars!(ax, 0:nb_layers, pmean.(errors), pstd.(errors))
+        scatterlines!(ax, 0:nb_layers, value.(accuracies); label="$σ")
+        errorbars!(ax, 0:nb_layers, value.(accuracies), uncertainty.(accuracies))
     end
     Legend(fig[1, 2], ax, L"\sigma")
     fig
@@ -315,14 +291,14 @@ let
     σ = 1.0
 
     fig = Figure()
-    ax = Axis(fig[1, 1]; xlabel="depth", ylabel="error")
+    ax = Axis(fig[1, 1]; xlabel="depth", ylabel="accuracy")
     @progress for (k, din) in enumerate(din_vals)
         csbm = SymmetricCSBM2d(; C, din, dout, σ)
-        errors = error_by_depth(
-            rng, csbm; nb_layers, nb_trajectories, nb_graphs, nb_samples
+        accuracies = accuracy_by_depth(
+            rng, csbm; nb_layers, nb_trajectories, nb_graphs
         )
-        scatterlines!(ax, 0:nb_layers, pmean.(errors); label="$din")
-        errorbars!(ax, 0:nb_layers, pmean.(errors), pstd.(errors))
+        scatterlines!(ax, 0:nb_layers, value.(accuracies); label="$din")
+        errorbars!(ax, 0:nb_layers, value.(accuracies), uncertainty.(accuracies))
     end
     Legend(fig[1, 2], ax, L"d_{in}")
     fig
@@ -336,17 +312,20 @@ md"""
 # ╔═╡ 9ba113e6-b1bf-4f05-a185-2b6e77f453ab
 let
     csbm = CSBM(
-        SBM(100, 2, 0.05, 0.05), [UnivariateNormal(-1.0, 1.0), UnivariateNormal(+1.0, 1.0)]
+        SBM(100, 2, 0.05, 0.05),
+		[UnivariateNormal(-1.0, 1.0), UnivariateNormal(+1.0, 1.0)]
     )
 
-    nb_layers = 10
-
-    errors = error_by_depth(rng, csbm; nb_layers, nb_trajectories, nb_graphs, nb_samples)
+    accuracies = accuracy_by_depth(rng, csbm; nb_layers, nb_trajectories, nb_graphs)
+	accuracies_logreg = accuracy_by_depth(rng, csbm, Val(:logisticregression); nb_layers, nb_trajectories, nb_graphs)
 
     fig = Figure()
-    ax = Axis(fig[1, 1]; xlabel="depth", ylabel="error")
-    scatterlines!(ax, 0:nb_layers, pmean.(errors))
-    errorbars!(ax, 0:nb_layers, pmean.(errors), pstd.(errors))
+    ax = Axis(fig[1, 1]; xlabel="depth", ylabel="accuracy")
+    scatterlines!(ax, (0:nb_layers) .- 0.05, value.(accuracies), label="theory")
+	scatterlines!(ax, (0:nb_layers) .+ 0.05, value.(accuracies_logreg), label="logistic regression")
+    errorbars!(ax, (0:nb_layers) .- 0.05, value.(accuracies), uncertainty.(accuracies))
+    errorbars!(ax, (0:nb_layers) .+ 0.05, value.(accuracies_logreg), uncertainty.(accuracies_logreg))
+	axislegend(ax)
     fig
 end
 
@@ -359,9 +338,7 @@ end
 # ╠═8b80f3b5-4fdd-48c8-9f0d-52e35535a653
 # ╠═efa56462-c94c-4b21-96e7-88ac5cfa9be1
 # ╟─3c9cb7de-33eb-4422-ae50-95d5bf7484e0
-# ╠═1ea22ce3-0423-4a80-9fbe-2b1d396f7f64
 # ╠═c5a94b08-78dc-4dd6-96c2-7ebe488205d7
-# ╠═09ef5298-50fa-40f5-978d-24c8db4ff6e9
 # ╠═c1a99529-cf54-4ff7-ae44-4bdfce781a07
 # ╟─38ddf907-2f83-4a43-89bb-f65356b6445b
 # ╟─3fadb088-ef57-47c0-b564-8a2d268b514a

@@ -15,12 +15,19 @@ function accuracy_first_layer(csbm::CSBM; max_neighbors, rtol)
 end
 
 function accuracy_by_depth(
-    rng::AbstractRNG, csbm::CSBM, ::Val{method}; nb_layers, nb_trajectories, kwargs...
+    rng::AbstractRNG,
+    csbm::CSBM,
+    ::Val{method}=Val(:randomwalk);
+    nb_layers,
+    nb_trajectories,
+    kwargs...,
 ) where {method}
     accuracy_trajectories = if method == :randomwalk
         random_walk_accuracy_trajectories(rng, csbm; nb_layers, nb_trajectories, kwargs...)
-    elseif method == :gnn
-        gnn_accuracy_trajectories(rng, csbm; nb_layers, nb_trajectories, kwargs...)
+    elseif method == :logisticregression
+        logistic_regression_accuracy_trajectories(
+            rng, csbm; nb_layers, nb_trajectories, kwargs...
+        )
     end
     return MonteCarloValue.(Vector.(eachrow(accuracy_trajectories)))
 end

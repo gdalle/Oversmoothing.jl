@@ -1,4 +1,4 @@
-function embeddings(rng::AbstractRNG, csbm::CSBM; nb_layers::Integer, nb_graphs::Integer=1)
+function empirical_embeddings(rng::AbstractRNG, csbm::CSBM; nb_layers, nb_graphs)
     (; sbm, features) = csbm
     G = nb_graphs
     L = nb_layers
@@ -21,8 +21,8 @@ function embeddings(rng::AbstractRNG, csbm::CSBM; nb_layers::Integer, nb_graphs:
         end
     end
 
-    histograms = map(Iterators.product(0:L, 1:C)) do (l, c)
+    embeddings = map(Iterators.product(0:L, 1:C)) do (l, c)
         reduce(vcat, [H_history[g, l + 1, community_range(sbm, c), :] for g in 1:G])
     end
-    return histograms
+    return embeddings
 end

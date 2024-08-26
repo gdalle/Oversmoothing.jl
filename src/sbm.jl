@@ -95,3 +95,25 @@ function Random.rand(rng::AbstractRNG, csbm::CSBM)
 end
 
 feature_dimension(csbm::CSBM) = length(csbm.features[1])
+
+## Specific models
+
+function LinearCSBM1d(; C::Integer, din::Real, dout::Real, σ::Real, N::Integer=100C)
+    p = din / N
+    q = dout / N
+    sbm = SBM(N, C, p, q)
+    μ = float.(1:C)
+    Σ = fill(σ^2, C)
+    features = UnivariateNormal.(μ, Σ)
+    return CSBM(sbm, features)
+end
+
+function SymmetricCSBM2d(; C::Integer, din::Real, dout::Real, σ::Real, N::Integer=100C)
+    p = din / N
+    q = dout / N
+    sbm = SBM(N, C, p, q)
+    μ = [[cospi(2(c - 1) / C), sinpi(2(c - 1) / C)] for c in 1:C]
+    Σ = [Diagonal([σ^2, σ^2]) for c in 1:C]
+    features = BivariateNormal.(μ, Σ)
+    return CSBM(sbm, features)
+end
