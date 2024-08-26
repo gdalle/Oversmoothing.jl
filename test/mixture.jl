@@ -17,7 +17,8 @@ samples = [rand(rng, mix) for _ in 1:10000];
 @test densityof(mix, zeros(1)) ≈
     dot(mix.weights, densityof.(mix.distributions, Ref(zeros(1))))
 
-@test pmean(error_montecarlo(rng, mix; nb_samples=1000)) ≈ error_quadrature(mix) rtol = 1e-1
+@test value(accuracy_montecarlo(rng, mix; nb_samples=1000)) ≈
+    value(accuracy_quadrature(mix; rtol=1e-2)) rtol = 1e-1
 
 ## Bivariate
 
@@ -35,4 +36,5 @@ samples = [rand(rng, mix) for _ in 1:10000];
 @test densityof(mix, zeros(2)) ≈
     dot(mix.weights, densityof.(mix.distributions, Ref(zeros(2))))
 
-@test pmean(error_montecarlo(rng, mix; nb_samples=1000)) ≈ error_quadrature(mix) rtol = 1e-1
+@test value(accuracy_montecarlo(rng, mix; nb_samples=1000)) ≈
+    value(accuracy_quadrature(mix; rtol=1e-2)) rtol = 1e-1

@@ -13,12 +13,12 @@ using SparseArrays
 ## other deps
 
 using DensityInterface: DensityInterface, logdensityof, densityof
-using Flux: Flux, Adam, Dense, onehotbatch, relu, softmax
+using Flux: Flux, Adam, DataLoader, Dense, onehotbatch, relu, softmax
 using Flux.Losses: crossentropy
-using GraphNeuralNetworks: GNNChain, GNNGraph, GNNLayer, SGConv
+using GraphNeuralNetworks: GraphNeuralNetworks, GNNChain, GNNGraph, GNNLayer, SGConv
 using HCubature: HCubature
 using LogExpFunctions: logsumexp
-using OhMyThreads: OhMyThreads, tforeach
+using ProgressLogging: @progress
 using QuadGK: QuadGK
 using StaticArrays: SVector, SMatrix, @SVector
 using StatsBase: StatsBase, sample
@@ -30,7 +30,7 @@ using Zygote: gradient
 include("uncertainty.jl")
 include("normal.jl")
 include("mixture.jl")
-include("error.jl")
+include("accuracy.jl")
 
 include("sbm.jl")
 include("embeddings.jl")
@@ -44,6 +44,7 @@ function plot_2d end
 
 ## exports
 
+export value, uncertainty
 export MultivariateNormal, UnivariateNormal, BivariateNormal
 export Mixture
 export StochasticBlockModel, SBM
@@ -51,12 +52,12 @@ export ContextualStochasticBlockModel, CSBM
 export nb_vertices, nb_communities
 export community_size, community_range, community_of_vertex
 export embeddings
-export error_quadrature, error_montecarlo
+export accuracy_quadrature, accuracy_montecarlo
 export first_layer_densities
-export random_walk_densities, random_walk_error_trajectories
-export gnn_error_trajectories
-export error_zeroth_layer, error_first_layer
-export error_by_depth, optimal_depth
+export random_walk_densities, random_walk_accuracy_trajectories
+export gnn_accuracy_trajectories
+export accuracy_zeroth_layer, accuracy_first_layer
+export accuracy_by_depth
 export plot_1d, plot_2d
 
 end # module Oversmoothing

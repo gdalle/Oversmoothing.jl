@@ -61,19 +61,18 @@ function random_walk_densities(rng::AbstractRNG, csbm::CSBM; nb_layers, nb_graph
     return densities
 end
 
-function random_walk_error_trajectories(
+function random_walk_accuracy_trajectories(
     rng::AbstractRNG, csbm::CSBM; nb_layers, nb_trajectories, nb_graphs, kwargs...
 )
     (; sbm) = csbm
     (; sizes) = sbm
-    error_trajectories = fill(NaN, nb_layers + 1, nb_trajectories)
+    accuracy_trajectories = fill(NaN, nb_layers + 1, nb_trajectories)
     for t in 1:nb_trajectories
         densities = random_walk_densities(rng, csbm; nb_layers, nb_graphs)
         for l in 0:nb_layers
             mixture = Mixture(densities[l + 1, :], sizes ./ sum(sizes))
-            err_quad = error_quadrature(mixture; kwargs...)
-            error_trajectories[l + 1, t] = value(err_quad)
+            accuracy_trajectories[l + 1, t] = value(accuracy_quadrature(mixture; kwargs...))
         end
     end
-    return error_trajectories
+    return accuracy_trajectories
 end

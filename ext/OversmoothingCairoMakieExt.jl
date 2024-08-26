@@ -7,7 +7,10 @@ using StaticArrays
 using Oversmoothing
 
 function Oversmoothing.plot_1d(
-    csbm::CSBM, histograms::Matrix{<:Matrix}, densities::Matrix{<:Mixture}; theme
+    csbm::CSBM,
+    histograms::Matrix{<:Matrix},
+    densities::Matrix{<:Mixture};
+    theme=theme_latexfonts(),
 )
     (; sbm, features) = csbm
     L = size(densities, 1) - 1
@@ -50,7 +53,10 @@ function Oversmoothing.plot_1d(
 end
 
 function Oversmoothing.plot_2d(
-    csbm::CSBM, histograms::Matrix{<:Matrix}, densities::Matrix{<:Mixture}; theme
+    csbm::CSBM,
+    histograms::Matrix{<:Matrix},
+    densities::Matrix{<:Mixture};
+    theme=theme_latexfonts(),
 )
     (; sbm, features) = csbm
     C = nb_communities(sbm)

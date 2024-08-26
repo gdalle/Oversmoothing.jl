@@ -2,7 +2,7 @@
 
 julia_version = "1.10.4"
 manifest_format = "2.0"
-project_hash = "65d769a811df389bb3d8d8a376121afbf43f63be"
+project_hash = "314ba5fd01ef006c84c20fe41310a870a5392aa7"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -126,12 +126,6 @@ weakdeps = ["SparseArrays"]
 
     [deps.ChainRulesCore.extensions]
     ChainRulesCoreSparseArraysExt = "SparseArrays"
-
-[[deps.ChunkSplitters]]
-deps = ["Compat", "TestItems"]
-git-tree-sha1 = "783507c1f2371c8f2d321f41c3057ecd42cafa83"
-uuid = "ae650224-84b6-46f8-82ea-d812ca08434e"
-version = "2.4.5"
 
 [[deps.Combinatorics]]
 git-tree-sha1 = "08c8b6831dc00bfea825826be0bc8336fc369860"
@@ -667,12 +661,6 @@ version = "0.4.18"
 uuid = "ca575930-c2e3-43a9-ace4-1e988b2c1908"
 version = "1.2.0"
 
-[[deps.OhMyThreads]]
-deps = ["BangBang", "ChunkSplitters", "StableTasks", "TaskLocalValues"]
-git-tree-sha1 = "881876fc70ab53ad60671ad4a1af25c920aee0eb"
-uuid = "67456a42-1dca-4109-a031-0a68de7e3ad5"
-version = "0.5.3"
-
 [[deps.OneHotArrays]]
 deps = ["Adapt", "ChainRulesCore", "Compat", "GPUArraysCore", "LinearAlgebra", "NNlib"]
 git-tree-sha1 = "963a3f28a2e65bb87a68033ea4a616002406037d"
@@ -851,11 +839,6 @@ git-tree-sha1 = "e08a62abc517eb79667d0a29dc08a3b589516bb5"
 uuid = "171d559e-b47b-412a-8079-5efa626c420e"
 version = "0.1.15"
 
-[[deps.StableTasks]]
-git-tree-sha1 = "073d5c20d44129b20fe954720b97069579fa403b"
-uuid = "91464d47-22a1-43fe-8b7f-2d57ee82463f"
-version = "0.1.5"
-
 [[deps.StaticArrays]]
 deps = ["LinearAlgebra", "PrecompileTools", "Random", "StaticArraysCore"]
 git-tree-sha1 = "eeafab08ae20c62c44c8399ccb9354a04b80db50"
@@ -944,19 +927,9 @@ deps = ["ArgTools", "SHA"]
 uuid = "a4e569a6-e804-4fa4-b0f3-eef7a1d5b13e"
 version = "1.10.0"
 
-[[deps.TaskLocalValues]]
-git-tree-sha1 = "eb0b8d147eb907a9ad3fd952da7c6a053b29ae28"
-uuid = "ed4db957-447d-4319-bfb6-7fa9ae7ecf34"
-version = "0.1.1"
-
 [[deps.Test]]
 deps = ["InteractiveUtils", "Logging", "Random", "Serialization"]
 uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-
-[[deps.TestItems]]
-git-tree-sha1 = "42fd9023fef18b9b78c8343a4e2f3813ffbcefcb"
-uuid = "1c621080-faea-4a02-84b6-bbd5e436b8fe"
-version = "1.0.0"
 
 [[deps.Transducers]]
 deps = ["Accessors", "Adapt", "ArgCheck", "BangBang", "Baselet", "CompositionsBase", "ConstructionBase", "DefineSingletons", "Distributed", "InitialValues", "Logging", "Markdown", "MicroCollections", "Requires", "SplittablesBase", "Tables"]
