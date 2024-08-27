@@ -49,7 +49,7 @@ export StochasticBlockModel, SBM
 export ContextualStochasticBlockModel, CSBM
 export nb_vertices, nb_communities
 export community_size, community_range, community_of_vertex
-export LinearCSBM1d, SymmetricCSBM2d
+export LinearCSBM1d, CircularCSBM2d
 export empirical_embeddings
 export accuracy_quadrature, accuracy_montecarlo
 export first_layer_densities, random_walk_densities

@@ -26,7 +26,7 @@ function Oversmoothing.plot_1d(
         axes = Axis[]
         Label(fig[0, 1], "Contextual SBM in 1D"; tellwidth=false, fontsize=20)
         for l in 0:L
-            Label(fig[l + 1, 2], "Layer $l"; tellheight=false, font=:bold, rotation=1.5π)
+            Label(fig[l + 1, 2], "Layer $l"; tellheight=false, rotation=1.5π)
             ax = Axis(fig[l + 1, 1]; xticksvisible=l == L, xticklabelsvisible=l == L)
             push!(axes, ax)
             linkxaxes!(ax, axes[1])
@@ -81,7 +81,7 @@ function Oversmoothing.plot_2d(
         end
         for l in 0:L
             Label(
-                fig[l + 1, C + 1], "Layer $l"; tellheight=false, font=:bold, rotation=1.5π
+                fig[l + 1, C + 1], "Layer $l"; tellheight=false, rotation=1.5π
             )
             axes = [
                 Axis(
@@ -108,7 +108,7 @@ function Oversmoothing.plot_2d(
                     embeddings[l + 1, c][:, 2];
                     color=colors[c],
                     label="community $c",
-                    alpha=1 / 10,
+                    alpha=2 / 10,
                 )
                 contour!(
                     axes[c],

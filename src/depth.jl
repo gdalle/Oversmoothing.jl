@@ -6,10 +6,10 @@ function accuracy_zeroth_layer(csbm::CSBM; rtol)
     return accuracy_quadrature(mix0; rtol)
 end
 
-function accuracy_first_layer(csbm::CSBM; max_neighbors, rtol)
+function accuracy_first_layer(csbm::CSBM; rtol, kwargs...)
     (; sbm) = csbm
     (; sizes) = sbm
-    densities1 = first_layer_densities(csbm; max_neighbors)
+    densities1 = first_layer_densities(csbm; kwargs...)
     mix1 = Mixture(densities1, sizes ./ sum(sizes))
     return accuracy_quadrature(mix1; rtol)
 end

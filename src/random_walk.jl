@@ -67,7 +67,7 @@ function random_walk_accuracy_trajectories(
     (; sbm) = csbm
     (; sizes) = sbm
     accuracy_trajectories = fill(NaN, nb_layers + 1, nb_trajectories)
-    for t in 1:nb_trajectories
+    @threads for t in 1:nb_trajectories
         densities = random_walk_densities(rng, csbm; nb_layers, nb_graphs)
         for l in 0:nb_layers
             mixture = Mixture(densities[l + 1, :], sizes ./ sum(sizes))
