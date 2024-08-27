@@ -36,18 +36,6 @@ function Statistics.mean(mix::Mixture)
     return sum(w[i] * mean(d[i]) for i in eachindex(d, w))
 end
 
-function squared_mean(m)
-    μ = mean(m)
-    return μ * transpose(μ)
-end
-
-function Statistics.cov(mix::Mixture)
-    d, w = distributions(mix), weights(mix)
-    second_moment = sum(w[i] * (cov(d[i]) + squared_mean(d[i])) for i in eachindex(d, w))
-    Σ = second_moment - squared_mean(mix)
-    return Σ
-end
-
 function DensityInterface.densityof(mix::Mixture, x)
     d, w = distributions(mix), weights(mix)
     return sum(w[i] * densityof(d[i], x) for i in eachindex(d, w))

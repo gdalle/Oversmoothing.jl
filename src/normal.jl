@@ -35,26 +35,22 @@ rootcov(g::MultivariateNormal) = g.L
 invcov(g::MultivariateNormal) = g.Σ⁻¹
 logdetcov(g::MultivariateNormal) = g.logdetΣ
 
-function Random.rand(rng::AbstractRNG, g::MultivariateNormal{T}) where {T}
-    μ, L = mean(g), rootcov(g)
-    z = randn(rng, T, length(g))
-    return μ .+ L * z
-end
-
 function Random.rand(
     rng::AbstractRNG, g::MultivariateNormal{T,<:SVector{N,T},<:SMatrix{N,N,T}}
 ) where {N,T}
     μ, L = mean(g), rootcov(g)
     z = @SVector(randn(rng, T, N))
-    return μ .+ L * z
+    return μ + L * z
 end
 
-center(x::AbstractVector, μ::AbstractVector) = x - μ
+function Random.rand(rng::AbstractRNG, g::MultivariateNormal{T}, n::Integer) where {T}
+    return [rand(rng, g) for _ in 1:n]
+end
 
 function DensityInterface.logdensityof(g::MultivariateNormal, x::AbstractVector)
     N = length(g)
     μ, Σ⁻¹, logdetΣ = mean(g), invcov(g), logdetcov(g)
-    x̄ = center(x, μ)
+    x̄ = x - μ
     l = (-N * log2π - logdetΣ - dot(x̄, Σ⁻¹, x̄)) / 2
     return l
 end
@@ -64,8 +60,4 @@ function DensityInterface.logdensityof(g::MultivariateNormal, x::Number)
     μ, Σ⁻¹, logdetΣ = mean(g), invcov(g), logdetcov(g)
     l = (-log2π - logdetΣ - dot(x - only(μ), only(Σ⁻¹), x - only(μ))) / 2
     return l
-end
-
-function Base.isapprox(g1::MultivariateNormal, g2::MultivariateNormal; kwargs...)
-    return isapprox(mean(g1), mean(g2); kwargs...) && isapprox(cov(g1), cov(g2); kwargs...)
 end

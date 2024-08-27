@@ -20,10 +20,10 @@ end
 
 function accuracy_montecarlo(rng::AbstractRNG, mix::Mixture; nb_samples)
     ba = BayesAccuracy(mix, true)
+    x = rand(rng, mix, nb_samples)
     accuracy_samples = fill(NaN, nb_samples)
     for s in 1:nb_samples
-        x = rand(rng, mix)
-        accuracy_samples[s] = ba(x)
+        accuracy_samples[s] = ba(x[s])
     end
     return MonteCarloValue(accuracy_samples)
 end
