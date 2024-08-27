@@ -53,9 +53,8 @@ export LinearCSBM1d, CircularCSBM2d
 export empirical_embeddings
 export accuracy_quadrature, accuracy_montecarlo
 export first_layer_densities, random_walk_densities
-export accuracy_zeroth_layer, accuracy_first_layer, random_walk_accuracy_trajectories
-export logistic_regression_accuracy_trajectories
-export accuracy_by_depth
+export accuracy_zeroth_layer, accuracy_first_layer
+export accuracy_by_depth, optimal_depth
 export plot_1d, plot_2d
 
 end # module Oversmoothing

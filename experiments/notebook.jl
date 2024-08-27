@@ -131,7 +131,7 @@ let
     features = [
         UnivariateNormal(-1.0, 0.02),
         UnivariateNormal(-0.0, 0.01),
-        UnivariateNormal(+1.0, 0.005),
+        UnivariateNormal(+2.0, 0.03),
     ]
     csbm = CSBM(sbm, features)
 
@@ -200,9 +200,10 @@ phase_transition_experiment = let
 
     @progress for i in eachindex(λ2_vals), j in eachindex(Δμ2_vals)
 		λ, Δμ = sqrt(λ2_vals[i]), sqrt(Δμ2_vals[j])
+		σ = inv(Δμ)
 		a = d + λ * sqrt(d)
 		b = d - λ * sqrt(d)
-        csbm = LinearCSBM1d(; N, C, p_in=a/N, p_out=b/N, Δμ)
+        csbm = LinearCSBM1d(; N, C, p_in=a/N, p_out=b/N, σ)
 
 		accuracy0_vals[i, j] = accuracy_zeroth_layer(csbm; rtol=1e-5) |> value
 		accuracy1_vals[i, j] = accuracy_first_layer(csbm; rtol=1e-5) |> value
@@ -219,7 +220,7 @@ let
     acc_diff_vals = accuracy1_vals .- accuracy0_vals
 
     fig = Figure(size=(500, 500))
-    ax = Axis(fig[1, 1]; aspect=1, xlabel=L"\lambda^2", ylabel=L"(\Delta \mu)^2")
+    ax = Axis(fig[1, 1]; aspect=1, xlabel=L"\lambda^2", ylabel=L"(\Delta \mu)^2 = 1/\sigma^2")
     hm = heatmap!(
         ax,
         λ2_vals,
@@ -244,7 +245,7 @@ md"""
 	C
 	p_in_vals
 	p_out_vals
-	Δμ
+	σ
 	accuracy0_vals
 	accuracy1_vals
 end
@@ -253,7 +254,7 @@ end
 connectivity_experiment = let
 	N = 100
     C = 2
-    Δμ = 1.0
+    σ = 1.0
 
     p_in_vals = (0:0.2:10) ./ N
     p_out_vals = (0:0.2:10) ./ N
@@ -263,13 +264,13 @@ connectivity_experiment = let
 
     @progress for i in eachindex(p_in_vals), j in eachindex(p_out_vals)
         p_in, p_out = p_in_vals[i], p_out_vals[j]
-        csbm = LinearCSBM1d(; N, C, p_in, p_out, Δμ)
+        csbm = LinearCSBM1d(; N, C, p_in, p_out, σ)
         accuracy0_vals[i, j] = accuracy_zeroth_layer(csbm; rtol=1e-4) |> value
         accuracy1_vals[i, j] = accuracy_first_layer(csbm; rtol=1e-4) |> value
     end
     
 	ConnectivityExperiment(;
-		N, C, p_in_vals, p_out_vals, Δμ, accuracy0_vals, accuracy1_vals
+		N, C, p_in_vals, p_out_vals, σ, accuracy0_vals, accuracy1_vals
 	)
 end
 
@@ -310,7 +311,7 @@ md"""
 	C
 	p_in
 	p_out
-	Δμ
+	σ
 	accuracies_rw
 	accuracies_lr
 end
@@ -321,30 +322,35 @@ oscillations_experiments = map(2:5) do C
 	N = 120
 	p_in = 0.05
 	p_out = 0.01
-	Δμ = 2
+	σ = 0.5
 	
 	nb_layers, nb_trajectories, nb_graphs = 6, 20, 10
     
-	csbm = CircularCSBM2d(; N, C, p_in, p_out, Δμ)
+	csbm = CircularCSBM2d(; N, C, p_in, p_out, σ)
 
     accuracies_rw = accuracy_by_depth(
-		rng, csbm, Val(:randomwalk);
+		rng, csbm; method=:randomwalk,
 		nb_layers, nb_trajectories, nb_graphs
 	)
 	accuracies_lr = accuracy_by_depth(
-		rng, csbm, Val(:logisticregression);
+		rng, csbm; method=:logisticregression,
 		nb_layers, nb_trajectories, nb_graphs
 	)
 
-    OscillationsExperiment(; N, C, p_in, p_out, Δμ, accuracies_rw, accuracies_lr)
+    OscillationsExperiment(; N, C, p_in, p_out, σ, accuracies_rw, accuracies_lr)
 end
 
 # ╔═╡ a52d2a3a-4e6a-40a9-90ab-543d3e021f60
 let
-	fig = Figure(size=(800, 300))
+	fig = Figure()
+	ax = Axis(fig[1:2, 1]; xlabel="depth", ylabel="accuracy")
 
-	axref = nothing
+	bands = []
+	scatters = []
+	errors = []
 
+	C_vals = []
+	
 	for (j, oscillations_experiment) in enumerate(oscillations_experiments)
 		(; C, accuracies_rw, accuracies_lr) = oscillations_experiment
 		nb_layers = length(accuracies_rw) - 1
@@ -352,19 +358,19 @@ let
 		val_rw, unc_rw = value.(accuracies_rw), uncertainty.(accuracies_rw)
 		val_lr, unc_lr = value.(accuracies_lr), uncertainty.(accuracies_lr)
 
-		if j == 1
-	    	ax = Axis(fig[1, j]; xlabel="depth", ylabel="accuracy", title=L"C = %$C")
-			axref = ax
-		else
-	    	ax = Axis(fig[1, j]; xlabel="depth", title=L"C = %$C")
-		end
-			
-		band!(ax, 0:nb_layers, val_lr - unc_lr, val_lr + unc_lr, label="logistic regression", alpha=0.3)
-	    scatterlines!(ax, 0:nb_layers, val_rw, label="theory")
-	    errorbars!(ax, 0:nb_layers, val_rw, unc_rw)
+		b = band!(ax, 0:nb_layers, val_lr - unc_lr, val_lr + unc_lr, label=L"regression - $C=%$C$", alpha=0.3)
+	    s = scatterlines!(ax, 0:nb_layers, val_rw, label=L"theory - $C=%$C$", markersize=0)
+	    e = errorbars!(ax, 0:nb_layers, val_rw, unc_rw, linewidth=2)
+		
+		push!(bands, b)
+		push!(scatters, s)
+		push!(errors, e)
+		push!(C_vals, C)
 	end
 
-	Legend(fig[2, 1:end], axref, orientation=:horizontal)
+	C_strings = [L"C = %$C" for C in C_vals]
+	Legend(fig[1, 2], scatters, C_strings, "Theory")
+	Legend(fig[2, 2], bands, C_strings, "Regression")
     fig
 end
 
@@ -373,63 +379,58 @@ md"""
 ## Optimal depth
 """
 
-# ╔═╡ d2ce838b-776f-4221-be50-90a5e6b7c34b
+# ╔═╡ 9b73fa13-dd4e-4ef4-bf39-ce30c325e931
 @kwdef struct OptimalDepthExperiment
 	N
 	C
 	p_in_vals
-	p_out
-	Δμ
-	accuracies
+	p_out_vals
+	σ
+	optimal_depth_vals
 end
 
-# ╔═╡ a0b6dc2d-3df5-43f4-a5eb-568a796707bb
-optimal_depth_experiments = map(2:5) do C
-	N = 120
-	p_in_vals = reverse(0.01:0.01:0.05)
-	p_out = 0.01
-	Δμ = 1
-	
-	nb_layers, nb_trajectories, nb_graphs = 6, 10, 10
-	
-	accuracies = Vector{Any}(undef, length(p_in_vals))
-	@progress "C = $C" for i in eachindex(p_in_vals)
-		p_in = p_in_vals[i]
-		csbm = CircularCSBM2d(; N, C, p_in, p_out, Δμ)
-		accuracies[i] = accuracy_by_depth(
-			rng, csbm, Val(:randomwalk);
-			nb_layers, nb_trajectories, nb_graphs
-		)
-	end
+# ╔═╡ 74d07ef9-6b62-4d14-ba4a-7af824339aeb
+optimal_depth_experiment = let
+	N = 100
+    C = 2
+    σ = 1.0
 
-	OptimalDepthExperiment(; N, C, p_in_vals, p_out, Δμ, accuracies)
+    p_in_vals = (0:0.5:10) ./ N
+    p_out_vals = (0:0.5:10) ./ N
+
+	nb_layers, nb_trajectories, nb_graphs = 10, 10, 5
+
+	optimal_depth_vals = fill(NaN, length(p_in_vals), length(p_out_vals))
+	
+	@progress for i in eachindex(p_in_vals), j in eachindex(p_out_vals)
+        p_in, p_out = p_in_vals[i], p_out_vals[j]
+        csbm = LinearCSBM1d(; N, C, p_in, p_out, σ)
+        optimal_depth_vals[i, j] = optimal_depth(rng, csbm; nb_layers, nb_trajectories, nb_graphs) |> value
+    end
+
+	OptimalDepthExperiment(; N, C, p_in_vals, p_out_vals, σ, optimal_depth_vals)
 end
 
-# ╔═╡ c1fcb1d2-f4b6-445a-962d-5ce9bd8271d1
+# ╔═╡ 8fbcc056-0960-4d6e-bdf1-240861fcd250
 let
-	fig = Figure(size=(1000, 400))
+	(; p_in_vals, p_out_vals, optimal_depth_vals) = optimal_depth_experiment
 
-	axref = nothing
-	
-	for (j, optimal_depth_experiment) in enumerate(optimal_depth_experiments)
-		(; C, p_in_vals, accuracies) = optimal_depth_experiment
-		nb_layers = length(accuracies[1]) - 1
-		
-		if j == 1
-			ax = Axis(fig[1, j]; xlabel="depth", ylabel="accuracy", title=L"C = %$C")
-			axref = ax
-		else
-			ax = Axis(fig[1, j]; xlabel="depth", title=L"C = %$C")
-		end
-
-		for (i, p_in) in enumerate(p_in_vals)
-			scatterlines!(ax, 0:nb_layers, value.(accuracies[i]), label=L"p_{in} = %$p_in")
-	    	errorbars!(ax, 0:nb_layers, value.(accuracies[i]), uncertainty.(accuracies[i]))
-		end
-	end
-
-	Legend(fig[2, 1:end], axref, orientation=:horizontal)
-	fig
+    fig = Figure(size=(500, 500))
+    ax = Axis(fig[1, 1]; aspect=1, xlabel=L"p_{in}", ylabel=L"p_{out}")
+    hm = heatmap!(
+        ax,
+        p_in_vals,
+        p_out_vals,
+        optimal_depth_vals;
+        colormap=:plasma,
+    )
+    Colorbar(
+		fig[1, 2], hm;
+		label="optimal depth",
+		ticks=0:ceil(Int,maximum(optimal_depth_vals)),
+	)
+	rowsize!(fig.layout, 1, Aspect(1, 1))
+    fig
 end
 
 # ╔═╡ Cell order:
@@ -463,6 +464,6 @@ end
 # ╠═9ba113e6-b1bf-4f05-a185-2b6e77f453ab
 # ╠═a52d2a3a-4e6a-40a9-90ab-543d3e021f60
 # ╟─eb3eb315-4c78-46d8-9256-dac0c1e4ebad
-# ╠═d2ce838b-776f-4221-be50-90a5e6b7c34b
-# ╠═a0b6dc2d-3df5-43f4-a5eb-568a796707bb
-# ╠═c1fcb1d2-f4b6-445a-962d-5ce9bd8271d1
+# ╠═9b73fa13-dd4e-4ef4-bf39-ce30c325e931
+# ╠═74d07ef9-6b62-4d14-ba4a-7af824339aeb
+# ╠═8fbcc056-0960-4d6e-bdf1-240861fcd250

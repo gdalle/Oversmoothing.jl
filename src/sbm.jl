@@ -93,8 +93,7 @@ feature_dimension(csbm::CSBM) = length(csbm.features[1])
 
 ## Specific models
 
-function LinearCSBM1d(; N::Integer, C::Integer, p_in::Real, p_out::Real, Δμ::Real)
-    σ = inv(Δμ)
+function LinearCSBM1d(; N::Integer, C::Integer, p_in::Real, p_out::Real, σ::Real)
     sbm = SBM(N, C, p_in, p_out)
     μ = float.(1:C)
     Σ = fill(σ^2, C)
@@ -102,8 +101,7 @@ function LinearCSBM1d(; N::Integer, C::Integer, p_in::Real, p_out::Real, Δμ::R
     return CSBM(sbm, features)
 end
 
-function CircularCSBM2d(; N::Integer, C::Integer, p_in::Real, p_out::Real, Δμ::Real)
-    σ = inv(Δμ)
+function CircularCSBM2d(; N::Integer, C::Integer, p_in::Real, p_out::Real, σ::Real)
     sbm = SBM(N, C, p_in, p_out)
     r = inv(2 * sinpi(1 / C))
     μ = [r .* [cospi(2(c - 1) / C), sinpi(2(c - 1) / C)] for c in 1:C]
