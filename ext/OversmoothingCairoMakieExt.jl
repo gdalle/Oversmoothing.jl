@@ -11,6 +11,7 @@ function Oversmoothing.plot_1d(
     embeddings::Matrix{<:Matrix},
     densities::Matrix{<:Mixture};
     theme=theme_latexfonts(),
+    path=nothing,
 )
     (; sbm, features) = csbm
     L = size(densities, 1) - 1
@@ -22,9 +23,8 @@ function Oversmoothing.plot_1d(
     colors = distinguishable_colors(C, [RGB(1, 1, 1), RGB(0, 0, 0)]; dropseed=true)
 
     with_theme(theme) do
-        fig = Figure(; size=(600, 200 * (L + 1)))
+        fig = Figure(; size=(500, 500))
         axes = Axis[]
-        Label(fig[0, 1], "Contextual SBM in 1D"; tellwidth=false, fontsize=20)
         for l in 0:L
             Label(fig[l + 1, 2], "Layer $l"; tellheight=false, rotation=1.5π)
             ax = Axis(fig[l + 1, 1]; xticksvisible=l == L, xticklabelsvisible=l == L)
@@ -36,7 +36,7 @@ function Oversmoothing.plot_1d(
                     vec(embeddings[l + 1, c]);
                     normalization=:pdf,
                     bins=50,
-                    label="community $c",
+                    label="Community $c",
                     color=(colors[c], 0.5),
                 )
                 lines!(
@@ -48,6 +48,10 @@ function Oversmoothing.plot_1d(
                 )
             end
         end
+        Legend(fig[0, 1], first(axes); tellwidth=false, orientation=:horizontal)
+        if !isnothing(path)
+            save(path, fig)
+        end
         fig
     end
 end
@@ -57,6 +61,7 @@ function Oversmoothing.plot_2d(
     embeddings::Matrix{<:Matrix},
     densities::Matrix{<:Mixture};
     theme=theme_latexfonts(),
+    path=nothing,
 )
     (; sbm, features) = csbm
     C = nb_communities(sbm)
@@ -73,16 +78,13 @@ function Oversmoothing.plot_2d(
     colors = distinguishable_colors(C, [RGB(1, 1, 1), RGB(0, 0, 0)]; dropseed=true)
 
     with_theme(theme) do
-        fig = Figure(; size=(700, 200 * (L + 1)))
+        fig = Figure(; size=(500, 500))
         all_axes = Axis[]
-        Label(fig[-1, 1:C], "Contextual SBM in 2D"; tellwidth=false, fontsize=20)
         for c in 1:C
             Label(fig[0, c], "Community $c"; tellwidth=false)
         end
         for l in 0:L
-            Label(
-                fig[l + 1, C + 1], "Layer $l"; tellheight=false, rotation=1.5π
-            )
+            Label(fig[l + 1, C + 1], "Layer $l"; tellheight=false, rotation=1.5π)
             axes = [
                 Axis(
                     fig[l + 1, c];
@@ -123,6 +125,9 @@ function Oversmoothing.plot_2d(
             end
         end
         resize_to_layout!(fig)
+        if !isnothing(path)
+            save(path, fig)
+        end
         return fig
     end
 end

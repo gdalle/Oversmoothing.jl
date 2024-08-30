@@ -90,7 +90,7 @@ md"""
 # ╔═╡ c5a94b08-78dc-4dd6-96c2-7ebe488205d7
 let
     C = 4
-    csbm = LinearCSBM1d(; N=100, C=C, p_in=0.03, p_out=0.01, Δμ=10)
+    csbm = LinearCSBM1d(; N=100, C=C, p_in=0.03, p_out=0.01, σ=0.1)
 
     fig = Figure()
     ax = Axis(fig[1, 1])
@@ -104,7 +104,7 @@ end
 # ╔═╡ c1a99529-cf54-4ff7-ae44-4bdfce781a07
 let
     C = 8
-    csbm = CircularCSBM2d(; N=200, C=C, p_in=0.03, p_out=0.01, Δμ=10)
+    csbm = CircularCSBM2d(; N=200, C=C, p_in=0.03, p_out=0.01, σ=0.1)
 
     fig = Figure()
     ax = Axis(fig[1, 1]; aspect=1)

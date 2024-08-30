@@ -15,60 +15,30 @@ rng = default_rng()
 
 ## 1D
 
-sbm = SBM(300, 3, 0.02, 0.01)
-
+sbm = SBM(300, 3, 0.03, 0.01)
 features = [
     UnivariateNormal(-1.0, 0.03), UnivariateNormal(-0.0, 0.01), UnivariateNormal(+1.0, 0.02)
 ]
-
 csbm = CSBM(sbm, features)
 
-L = 4
-histograms = @time embeddings(rng, csbm; nb_layers=L, nb_graphs=1000);
-# densities1 = first_layer_densities(csbm; max_neighbors=50);
-densities = @time random_walk_densities(rng, csbm; nb_layers=L, nb_graphs=100);
+L = 2
+embeddings = @time empirical_embeddings(rng, csbm; nb_layers=L, nb_graphs=100);
+densities = @time random_walk_densities(rng, csbm; nb_layers=L, nb_graphs=20);
 
-logistic_regression_accuracy_trajectories(rng, csbm; nb_layers=L, nb_graphs=10)
-
-plot_1d(csbm, histograms, densities)
-
-accuracies = accuracy_by_depth(
-    rng, csbm, Val(:randomwalk); nb_layers=10, nb_trajectories=2, nb_graphs=100, rtol=1e-2
-)
+plot_1d(csbm, embeddings, densities; path=joinpath(@__DIR__, "images", "1d.pdf"))
 
 ## 2D
 
-sbm = SBM(90, 3, 0.03, 0.01)
-
+sbm = SBM(300, 3, 0.03, 0.01)
 features = [
-    BivariateNormal([-1.0, 1.0], [1 0.1; 0.1 0.5]),  #
-    BivariateNormal([1.0, -1.0], [0.5 0.2; 0.2 1.0]),  #
-    BivariateNormal([1.0, 1.0], [1 0.3; 0.3 1]),  #
+    BivariateNormal([-2.0, 0.0], [1.0 0.0; 0.0 2.0]),
+    BivariateNormal([0.0, 2.0], [2.0 -0.4; -0.4 1.0]),
+    BivariateNormal([+3.0, -1.0], [1.0 0.3; 0.3 1.0]),
 ]
-
 csbm = CSBM(sbm, features)
 
-L = 3
-histograms = @time embeddings(rng, csbm; nb_layers=L, nb_graphs=100);
-# densities1 = first_layer_densities(csbm; max_neighbors=50);
+L = 2
+embeddings = @time empirical_embeddings(rng, csbm; nb_layers=L, nb_graphs=100);
 densities = random_walk_densities(rng, csbm; nb_layers=L, nb_graphs=20);
 
-plot_2d(csbm, histograms, densities)
-
-accuracies_th = accuracy_by_depth(
-    rng, csbm, Val(:randomwalk); nb_layers=5, nb_trajectories=10, nb_graphs=20, rtol=1e-3
-)
-
-accuracies = @time accuracy_by_depth(
-    rng, csbm, Val(:logisticregression); nb_layers=5, nb_trajectories=10, nb_graphs=100
-)
-
-errorbars(0:(length(accuracies) - 1), value.(accuracies), uncertainty.(accuracies))
-errorbars!(
-    0.1 .+ (0:(length(accuracies_th) - 1)),
-    value.(accuracies_th),
-    uncertainty.(accuracies_th),
-)
-scatter!((0:(length(accuracies) - 1)), value.(accuracies))
-scatter!(0.1 .+ (0:(length(accuracies_th) - 1)), value.(accuracies_th))
-current_figure()
+plot_2d(csbm, embeddings, densities; path=joinpath(@__DIR__, "images", "2d.pdf"))
