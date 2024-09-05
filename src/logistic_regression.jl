@@ -8,7 +8,7 @@ function logistic_regression_accuracy_trajectories(
 
     accuracy_trajectories = fill(NaN, L + 1, T)
 
-    @threads for t in 1:T
+    for t in 1:T
         embeddings_train = empirical_embeddings(rng, csbm; nb_layers, nb_graphs)
         embeddings_test = empirical_embeddings(rng, csbm; nb_layers, nb_graphs)
 

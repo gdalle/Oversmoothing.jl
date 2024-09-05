@@ -23,10 +23,10 @@ function Oversmoothing.plot_1d(
     colors = distinguishable_colors(C, [RGB(1, 1, 1), RGB(0, 0, 0)]; dropseed=true)
 
     with_theme(theme) do
-        fig = Figure(; size=(500, 500))
+        fig = Figure(; size=(500, 200 * (L + 1)))
         axes = Axis[]
         for l in 0:L
-            Label(fig[l + 1, 2], "Layer $l"; tellheight=false, rotation=1.5π)
+            Label(fig[l + 1, 2], "layer $l"; tellheight=false, rotation=1.5π)
             ax = Axis(fig[l + 1, 1]; xticksvisible=l == L, xticklabelsvisible=l == L)
             push!(axes, ax)
             linkxaxes!(ax, axes[1])
@@ -36,7 +36,7 @@ function Oversmoothing.plot_1d(
                     vec(embeddings[l + 1, c]);
                     normalization=:pdf,
                     bins=50,
-                    label="Community $c",
+                    label="community $c",
                     color=(colors[c], 0.5),
                 )
                 lines!(
@@ -78,13 +78,13 @@ function Oversmoothing.plot_2d(
     colors = distinguishable_colors(C, [RGB(1, 1, 1), RGB(0, 0, 0)]; dropseed=true)
 
     with_theme(theme) do
-        fig = Figure(; size=(500, 500))
+        fig = Figure(; size=(200 * C, 200 * (L + 1)))
         all_axes = Axis[]
         for c in 1:C
-            Label(fig[0, c], "Community $c"; tellwidth=false)
+            Label(fig[0, c], "community $c"; tellwidth=false)
         end
         for l in 0:L
-            Label(fig[l + 1, C + 1], "Layer $l"; tellheight=false, rotation=1.5π)
+            Label(fig[l + 1, C + 1], "layer $l"; tellheight=false, rotation=1.5π)
             axes = [
                 Axis(
                     fig[l + 1, c];

@@ -1,3 +1,15 @@
+function quadrature_1d(f; rtol=1e-5, bound=10, kwargs...)
+    result, error = QuadGK.quadgk(f, -bound, bound; rtol, kwargs...)
+    return result
+end
+
+function quadrature_nd(f, dim; rtol=1e-5, bound=10, kwargs...)
+    result, error = HCubature.hcubature(
+        f, -fill(bound, dim), +fill(bound, dim); rtol, kwargs...
+    )
+    return result
+end
+
 struct BayesAccuracy{M<:Mixture}
     mix::M
     normalized::Bool
@@ -28,24 +40,27 @@ function accuracy_montecarlo(rng::AbstractRNG, mix::Mixture; nb_samples)
     return MonteCarloValue(accuracy_samples)
 end
 
-function accuracy_quadrature_1d(mix::Mixture; rtol, bound=100, kwargs...)
-    ba = BayesAccuracy(mix, false)
-    accuracy, quad_accuracy = QuadGK.quadgk(ba, -bound, bound; rtol, kwargs...)
-    return IntervalValue(accuracy, quad_accuracy)
-end
-
-function accuracy_quadrature_nd(mix::Mixture; rtol, bound=100, kwargs...)
-    ba = BayesAccuracy(mix, false)
-    accuracy, cub_accuracy = HCubature.hcubature(
-        ba, -fill(bound, length(mix)), +fill(bound, length(mix)); rtol, kwargs...
-    )
-    return IntervalValue(accuracy, cub_accuracy)
-end
-
-function accuracy_quadrature(mix::Mixture; rtol, kwargs...)
+function accuracy_quadrature(mix::Mixture; kwargs...)
+    f = BayesAccuracy(mix, false)
     if length(mix) == 1
-        return accuracy_quadrature_1d(mix; rtol, kwargs...)
+        return quadrature_1d(f; kwargs...)
     else
-        return accuracy_quadrature_nd(mix; rtol, kwargs...)
+        return quadrature_nd(f, length(mix); kwargs...)
+    end
+end
+
+struct AbsoluteDifference{D1,D2}
+    f::D1
+    g::D2
+end
+
+(ad::AbsoluteDifference)(x) = abs(densityof(ad.f, x) - densityof(ad.g, x)) / 2
+
+function total_variation_quadrature(density1, density2; kwargs...)
+    f = AbsoluteDifference(density1, density2)
+    if length(density1) == 1
+        return quadrature_1d(f; kwargs...)
+    else
+        return quadrature_nd(f, length(density1); kwargs...)
     end
 end

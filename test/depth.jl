@@ -18,6 +18,3 @@ accuracies = accuracy_by_depth(
 @test value.(accuracies_th) ≈ value.(accuracies) rtol = 1e-2
 @test all(<(3e-2), uncertainty.(accuracies_th))
 @test all(<(3e-2), uncertainty.(accuracies))
-
-depth = optimal_depth(rng, csbm; nb_layers=5, nb_trajectories=10, nb_graphs=5)
-@test uncertainty(depth) < 1

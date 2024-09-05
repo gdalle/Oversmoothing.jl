@@ -16,8 +16,11 @@ using Test
     @testset "Mixture" begin
         include("mixture.jl")
     end
-    @testset "Stochastic Block Model" begin
+    @testset "SBM" begin
         include("sbm.jl")
+    end
+    @testset "Contextual SBM" begin
+        include("csbm.jl")
     end
     @testset "Depth" begin
         include("depth.jl")

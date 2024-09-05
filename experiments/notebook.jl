@@ -23,7 +23,6 @@ begin
     using StaticArrays
 
     BLAS.set_num_threads(1)
-    rng = Random.default_rng()
 end
 
 # ╔═╡ d46ca486-6b19-4b00-b996-2762d683eb1e
@@ -89,29 +88,32 @@ md"""
 
 # ╔═╡ c5a94b08-78dc-4dd6-96c2-7ebe488205d7
 let
-    C = 4
+	rng = StableRNG(63)
+    C = 5
     csbm = LinearCSBM1d(; N=100, C=C, p_in=0.03, p_out=0.01, σ=0.1)
 
-    fig = Figure()
+    fig = Figure(size=(400, 200))
     ax = Axis(fig[1, 1])
     for c in 1:C
-        x = [rand(rng, csbm.features[c]) for _ in 1:100]
-        hist!(ax, first.(x))
+        x = [rand(rng, csbm.features[c]) for _ in 1:1000]
+        hist!(ax, first.(x), label="community $c")
     end
     fig
 end
 
 # ╔═╡ c1a99529-cf54-4ff7-ae44-4bdfce781a07
 let
-    C = 8
-    csbm = CircularCSBM2d(; N=200, C=C, p_in=0.03, p_out=0.01, σ=0.1)
+	rng = StableRNG(63)
+    C = 5
+    csbm = CircularCSBM2d(; N=200, C=C, p_in=0.03, p_out=0.01, σ=0.1, stretch=1)
 
-    fig = Figure()
+    fig = Figure(size=(400, 400))
     ax = Axis(fig[1, 1]; aspect=1)
     for c in 1:C
-        x = [rand(rng, csbm.features[c]) for _ in 1:100]
-        scatter!(ax, first.(x), last.(x))
+        x = [rand(rng, csbm.features[c]) for _ in 1:200]
+        scatter!(ax, first.(x), last.(x), label="community $c")
     end
+	axislegend(ax)
     fig
 end
 
@@ -127,13 +129,8 @@ md"""
 
 # ╔═╡ a7e26ada-e581-4ef6-91ca-f0dba906ebb8
 let
-    sbm = SBM(300, 3, 0.03, 0.01)
-    features = [
-        UnivariateNormal(-1.0, 0.02),
-        UnivariateNormal(-0.0, 0.01),
-        UnivariateNormal(+2.0, 0.03),
-    ]
-    csbm = CSBM(sbm, features)
+	rng = StableRNG(63)
+    csbm = LinearCSBM1d(; N=60, C=3, p_in=0.04, p_out=0.02, σ=0.1)
 
     nb_layers = 2
     nb_graphs = 100
@@ -150,13 +147,8 @@ md"""
 
 # ╔═╡ 0735dfc4-85c0-491b-8bb6-58aa4272b772
 let
-    sbm = SBM(300, 3, 0.03, 0.01)
-    features = [
-        BivariateNormal([-2.0, 0.0], [1.0 0.; 0. 2.0]),
-        BivariateNormal([0.0, 2.0], [2.0 -0.4; -0.4 1.0]),
-        BivariateNormal([+3.0, -1.0], [1.0 0.3; 0.3 1.0]),
-    ]
-    csbm = CSBM(sbm, features)
+	rng = StableRNG(63)
+    csbm = CircularCSBM2d(; N=60, C=3, p_in=0.04, p_out=0.02, σ=0.1)
 
     nb_layers = 2
     nb_graphs = 100
@@ -166,10 +158,138 @@ let
     plot_2d(csbm, embeddings, densities; theme=MYTHEME)
 end
 
+# ╔═╡ d504e299-95b1-4874-91a4-1cc365e8d0cd
+let
+	csbm = CircularCSBM2d(; N=60, C=3, p_in=0.04, p_out=0.02, σ=0.1)
+	densities1 = first_layer_densities(csbm)
+	densities1_normal = MultivariateNormal.(densities1)
+end
+
 # ╔═╡ f53e238d-6f08-4da0-a5af-7278a7c64e5c
 md"""
 # First layer
 """
+
+# ╔═╡ c69e1c1f-e5c2-41cf-86c3-6a25c6ff5a9f
+md"""
+## Normality
+"""
+
+# ╔═╡ cc21e14f-12b1-4cb9-972e-f90750b7a551
+@kwdef struct NormalityExperiment
+	N_vals
+	C
+	p_in
+	p_out
+	σ_vals
+	total_variation_vals
+end
+
+# ╔═╡ 04613bc4-c04a-4497-a024-8c8baf13f755
+normality_experiment = let
+	rng = StableRNG(63)
+
+	N_vals = 50:10:500
+	C = 2
+	p_in = 0.05
+	p_out = 0.02
+	σ_vals = 0.01:0.005:0.2
+
+	total_variation_vals = fill(NaN, length(N_vals), length(σ_vals))
+	
+	@progress for i in eachindex(N_vals), j in eachindex(σ_vals)
+		N, σ = N_vals[i], σ_vals[j]
+		csbm = LinearCSBM1d(; N, C, p_in, p_out, σ)
+
+		density1 = first_layer_densities(csbm)[1]
+		density1_normal = MultivariateNormal(density1)
+		tv = total_variation_quadrature(density1, density1_normal; rtol=1e-5)
+		total_variation_vals[i, j] = value(tv)
+	end
+
+	NormalityExperiment(; N_vals, C, p_in, p_out, σ_vals, total_variation_vals)
+end
+
+# ╔═╡ 81ba0e8c-49e0-4744-b9e8-fffa2b05aaaa
+let
+	(; N_vals, σ_vals, total_variation_vals) = normality_experiment
+
+	fig = Figure(size=(500, 500))
+    ax = Axis(fig[1, 1]; aspect=1, xlabel=L"graph size $N$", ylabel=L"noise $\sigma$")
+    hm = heatmap!(
+        ax,
+        N_vals,
+        σ_vals,
+        total_variation_vals;
+        colormap=:viridis,
+		colorscale=log10,
+    )
+    Colorbar(fig[1, 2], hm; label="total variation distance \nbetween mixture and Gaussian")
+	rowsize!(fig.layout, 1, Aspect(1, 1))
+    fig
+end
+
+# ╔═╡ 4b8d0758-7c36-42d4-b2c7-df5a4b033d38
+md"""
+## Connectivity
+"""
+
+# ╔═╡ 4b7d7234-ece3-4875-a232-562ebe418055
+@kwdef struct ConnectivityExperiment
+	N
+	C
+	p_in_vals
+	p_out_vals
+	σ
+	accuracy0_vals
+	accuracy1_vals
+end
+
+# ╔═╡ c5ddce4c-21ae-4eb9-a411-a576ac8f766d
+connectivity_experiment = let
+	rng = StableRNG(63)
+	N = 100
+    C = 2
+    σ = 1.0
+
+    p_in_vals = (0:0.2:10) ./ N
+    p_out_vals = (0:0.2:10) ./ N
+
+	accuracy0_vals = fill(NaN, length(p_in_vals), length(p_out_vals))
+    accuracy1_vals = fill(NaN, length(p_in_vals), length(p_out_vals))
+
+    @progress for i in eachindex(p_in_vals), j in eachindex(p_out_vals)
+        p_in, p_out = p_in_vals[i], p_out_vals[j]
+        csbm = LinearCSBM1d(; N, C, p_in, p_out, σ)
+        accuracy0_vals[i, j] = accuracy_zeroth_layer(csbm; rtol=1e-4) |> value
+        accuracy1_vals[i, j] = accuracy_first_layer(csbm; rtol=1e-4) |> value
+    end
+    
+	ConnectivityExperiment(;
+		N, C, p_in_vals, p_out_vals, σ, accuracy0_vals, accuracy1_vals
+	)
+end
+
+# ╔═╡ 2b272855-8b04-47d0-b2c5-c672ab633f79
+let
+	(; p_in_vals, p_out_vals, accuracy0_vals, accuracy1_vals) = connectivity_experiment
+
+	acc_diff_vals = accuracy1_vals .- accuracy0_vals
+
+    fig = Figure(size=(500, 500))
+    ax = Axis(fig[1, 1]; aspect=1, xlabel=L"inner connectivity $p_{in}$", ylabel=L"outer connectivity $p_{out}$")
+    hm = heatmap!(
+        ax,
+        p_in_vals,
+        p_out_vals,
+        acc_diff_vals;
+        colormap=Reverse(:curl),
+        colorrange=(-maximum(abs, acc_diff_vals), maximum(abs, acc_diff_vals)),
+    )
+    Colorbar(fig[1, 2], hm; label=L"accuracy improvement after $1$ layer")
+	rowsize!(fig.layout, 1, Aspect(1, 1))
+    fig
+end
 
 # ╔═╡ aed0b4be-36c4-412d-a9a0-d0553e67cc61
 md"""
@@ -220,72 +340,11 @@ let
     acc_diff_vals = accuracy1_vals .- accuracy0_vals
 
     fig = Figure(size=(500, 500))
-    ax = Axis(fig[1, 1]; aspect=1, xlabel=L"\lambda^2", ylabel=L"(\Delta \mu)^2 = 1/\sigma^2")
+    ax = Axis(fig[1, 1]; aspect=1, xlabel=L"graph information level $\lambda^2$", ylabel=L"features information level $(\Delta \mu)^2 = 1/\sigma^2$")
     hm = heatmap!(
         ax,
         λ2_vals,
         Δμ2_vals,
-        acc_diff_vals;
-        colormap=Reverse(:curl),
-        colorrange=(-maximum(abs, acc_diff_vals), maximum(abs, acc_diff_vals)),
-    )
-    Colorbar(fig[1, 2], hm; label=L"accuracy improvement after $1$ layer")
-	rowsize!(fig.layout, 1, Aspect(1, 1))
-    fig
-end
-
-# ╔═╡ 4b8d0758-7c36-42d4-b2c7-df5a4b033d38
-md"""
-## Connectivity
-"""
-
-# ╔═╡ 4b7d7234-ece3-4875-a232-562ebe418055
-@kwdef struct ConnectivityExperiment
-	N
-	C
-	p_in_vals
-	p_out_vals
-	σ
-	accuracy0_vals
-	accuracy1_vals
-end
-
-# ╔═╡ c5ddce4c-21ae-4eb9-a411-a576ac8f766d
-connectivity_experiment = let
-	N = 100
-    C = 2
-    σ = 1.0
-
-    p_in_vals = (0:0.2:10) ./ N
-    p_out_vals = (0:0.2:10) ./ N
-
-	accuracy0_vals = fill(NaN, length(p_in_vals), length(p_out_vals))
-    accuracy1_vals = fill(NaN, length(p_in_vals), length(p_out_vals))
-
-    @progress for i in eachindex(p_in_vals), j in eachindex(p_out_vals)
-        p_in, p_out = p_in_vals[i], p_out_vals[j]
-        csbm = LinearCSBM1d(; N, C, p_in, p_out, σ)
-        accuracy0_vals[i, j] = accuracy_zeroth_layer(csbm; rtol=1e-4) |> value
-        accuracy1_vals[i, j] = accuracy_first_layer(csbm; rtol=1e-4) |> value
-    end
-    
-	ConnectivityExperiment(;
-		N, C, p_in_vals, p_out_vals, σ, accuracy0_vals, accuracy1_vals
-	)
-end
-
-# ╔═╡ 2b272855-8b04-47d0-b2c5-c672ab633f79
-let
-	(; p_in_vals, p_out_vals, accuracy0_vals, accuracy1_vals) = connectivity_experiment
-
-	acc_diff_vals = accuracy1_vals .- accuracy0_vals
-
-    fig = Figure(size=(500, 500))
-    ax = Axis(fig[1, 1]; aspect=1, xlabel=L"p_{in}", ylabel=L"p_{out}")
-    hm = heatmap!(
-        ax,
-        p_in_vals,
-        p_out_vals,
         acc_diff_vals;
         colormap=Reverse(:curl),
         colorrange=(-maximum(abs, acc_diff_vals), maximum(abs, acc_diff_vals)),
@@ -319,12 +378,13 @@ end
 # ╔═╡ 9ba113e6-b1bf-4f05-a185-2b6e77f453ab
 oscillations_experiments = map(2:5) do C
 	@info "C = $C"
+	rng = StableRNG(63)
 	N = 120
 	p_in = 0.05
 	p_out = 0.01
 	σ = 0.5
 	
-	nb_layers, nb_trajectories, nb_graphs = 6, 20, 10
+	nb_layers, nb_trajectories, nb_graphs = 6, 10, 10
     
 	csbm = CircularCSBM2d(; N, C, p_in, p_out, σ)
 
@@ -343,7 +403,7 @@ end
 # ╔═╡ a52d2a3a-4e6a-40a9-90ab-543d3e021f60
 let
 	fig = Figure()
-	ax = Axis(fig[1:2, 1]; xlabel="depth", ylabel="accuracy")
+	ax = Axis(fig[1:2, 1]; xlabel=L"depth $L$", ylabel=L"accuracy $a$")
 
 	bands = []
 	scatters = []
@@ -374,65 +434,6 @@ let
     fig
 end
 
-# ╔═╡ eb3eb315-4c78-46d8-9256-dac0c1e4ebad
-md"""
-## Optimal depth
-"""
-
-# ╔═╡ 9b73fa13-dd4e-4ef4-bf39-ce30c325e931
-@kwdef struct OptimalDepthExperiment
-	N
-	C
-	p_in_vals
-	p_out_vals
-	σ
-	optimal_depth_vals
-end
-
-# ╔═╡ 74d07ef9-6b62-4d14-ba4a-7af824339aeb
-optimal_depth_experiment = let
-	N = 100
-    C = 2
-    σ = 1.0
-
-    p_in_vals = (0:0.5:10) ./ N
-    p_out_vals = (0:0.5:10) ./ N
-
-	nb_layers, nb_trajectories, nb_graphs = 10, 10, 5
-
-	optimal_depth_vals = fill(NaN, length(p_in_vals), length(p_out_vals))
-	
-	@progress for i in eachindex(p_in_vals), j in eachindex(p_out_vals)
-        p_in, p_out = p_in_vals[i], p_out_vals[j]
-        csbm = LinearCSBM1d(; N, C, p_in, p_out, σ)
-        optimal_depth_vals[i, j] = optimal_depth(rng, csbm; nb_layers, nb_trajectories, nb_graphs) |> value
-    end
-
-	OptimalDepthExperiment(; N, C, p_in_vals, p_out_vals, σ, optimal_depth_vals)
-end
-
-# ╔═╡ 8fbcc056-0960-4d6e-bdf1-240861fcd250
-let
-	(; p_in_vals, p_out_vals, optimal_depth_vals) = optimal_depth_experiment
-
-    fig = Figure(size=(500, 500))
-    ax = Axis(fig[1, 1]; aspect=1, xlabel=L"p_{in}", ylabel=L"p_{out}")
-    hm = heatmap!(
-        ax,
-        p_in_vals,
-        p_out_vals,
-        optimal_depth_vals;
-        colormap=:plasma,
-    )
-    Colorbar(
-		fig[1, 2], hm;
-		label="optimal depth",
-		ticks=0:ceil(Int,maximum(optimal_depth_vals)),
-	)
-	rowsize!(fig.layout, 1, Aspect(1, 1))
-    fig
-end
-
 # ╔═╡ Cell order:
 # ╟─d46ca486-6b19-4b00-b996-2762d683eb1e
 # ╟─9733cd58-fbee-4c0e-839d-15fc362c9abf
@@ -449,21 +450,22 @@ end
 # ╠═a7e26ada-e581-4ef6-91ca-f0dba906ebb8
 # ╟─67987f14-d637-4f33-b3e9-91597290cb74
 # ╠═0735dfc4-85c0-491b-8bb6-58aa4272b772
+# ╠═d504e299-95b1-4874-91a4-1cc365e8d0cd
 # ╟─f53e238d-6f08-4da0-a5af-7278a7c64e5c
-# ╟─aed0b4be-36c4-412d-a9a0-d0553e67cc61
-# ╠═f57cf269-d9a4-4393-8a21-ff898881c1ee
-# ╠═8aafdda1-9730-4954-902c-c22669503f91
-# ╠═5c6f6a76-378e-4687-82ab-40352f935a58
+# ╟─c69e1c1f-e5c2-41cf-86c3-6a25c6ff5a9f
+# ╠═cc21e14f-12b1-4cb9-972e-f90750b7a551
+# ╠═04613bc4-c04a-4497-a024-8c8baf13f755
+# ╠═81ba0e8c-49e0-4744-b9e8-fffa2b05aaaa
 # ╟─4b8d0758-7c36-42d4-b2c7-df5a4b033d38
 # ╠═4b7d7234-ece3-4875-a232-562ebe418055
 # ╠═c5ddce4c-21ae-4eb9-a411-a576ac8f766d
 # ╠═2b272855-8b04-47d0-b2c5-c672ab633f79
+# ╟─aed0b4be-36c4-412d-a9a0-d0553e67cc61
+# ╠═f57cf269-d9a4-4393-8a21-ff898881c1ee
+# ╠═8aafdda1-9730-4954-902c-c22669503f91
+# ╠═5c6f6a76-378e-4687-82ab-40352f935a58
 # ╟─9a881c91-fffb-416a-beb9-ad5985063273
 # ╟─4c090dd7-f296-4836-bee4-0ed43a3ea7ec
 # ╠═539f2393-3ba8-4287-8e82-aa602e76cf01
 # ╠═9ba113e6-b1bf-4f05-a185-2b6e77f453ab
 # ╠═a52d2a3a-4e6a-40a9-90ab-543d3e021f60
-# ╟─eb3eb315-4c78-46d8-9256-dac0c1e4ebad
-# ╠═9b73fa13-dd4e-4ef4-bf39-ce30c325e931
-# ╠═74d07ef9-6b62-4d14-ba4a-7af824339aeb
-# ╠═8fbcc056-0960-4d6e-bdf1-240861fcd250

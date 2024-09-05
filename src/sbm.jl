@@ -101,12 +101,17 @@ function LinearCSBM1d(; N::Integer, C::Integer, p_in::Real, p_out::Real, σ::Rea
     return CSBM(sbm, features)
 end
 
-function CircularCSBM2d(; N::Integer, C::Integer, p_in::Real, p_out::Real, σ::Real)
+function CircularCSBM2d(;
+    N::Integer, C::Integer, p_in::Real, p_out::Real, σ::Real, stretch::Real=1
+)
     sbm = SBM(N, C, p_in, p_out)
     r = inv(2 * sinpi(1 / C))
-    μ = [r .* [cospi(2(c - 1) / C), sinpi(2(c - 1) / C)] for c in 1:C]
-    @assert norm(μ[2] - μ[1]) ≈ 1
-    Σ = [Diagonal([σ^2, σ^2]) for c in 1:C]
+    radial_vectors = [[cospi(2(c - 1) / C), sinpi(2(c - 1) / C)] for c in 1:C]
+    tangent_vectors = [[-sinpi(2(c - 1) / C), cospi(2(c - 1) / C)] for c in 1:C]
+    μ = [r .* radial_vectors[c] for c in 1:C]
+    U = [hcat(radial_vectors[c], tangent_vectors[c]) for c in 1:C]
+    D = Diagonal([stretch * σ^2, inv(stretch) * σ^2])
+    Σ = [Symmetric(U[c] * D * U[c]') for c in 1:C]
     features = BivariateNormal.(μ, Σ)
     return CSBM(sbm, features)
 end

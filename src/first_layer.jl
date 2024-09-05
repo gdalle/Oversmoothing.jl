@@ -18,7 +18,7 @@ function first_layer_densities(csbm::CSBM{C}; max_neighbors=nb_vertices(csbm.sbm
     lims = ntuple(c -> 0:N[c], Val(C))
     for c0 in 1:C, k in Iterators.product(lims...)
         w_ck = prod(w_aux[c0, c1, k[c1] + 1] for c1 in 1:C)
-        w_ck > eps() || continue
+        w_ck > eps(Float64) || continue
         μ_ck = sum((k[c1] + (c0 == c1)) .* μ0[c1] for c1 in 1:C) / (sum(k) + 1)
         Σ_ck = sum((k[c1] + (c0 == c1)) .* Σ0[c1] for c1 in 1:C) / (sum(k) + 1)^2
         push!(w[c0], w_ck)

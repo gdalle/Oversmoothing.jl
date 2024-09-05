@@ -9,7 +9,11 @@ struct MultivariateNormal{
 end
 
 function MultivariateNormal(μ::AbstractVector, Σ::AbstractMatrix)
-    @assert ishermitian(Σ)
+    
+    if !ishermitian(Σ)
+        @show Σ
+        @assert ishermitian(Σ)
+    end
     return MultivariateNormal(μ, Σ, cholesky(Σ).L, inv(Σ), logdet(Σ))
 end
 

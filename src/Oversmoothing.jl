@@ -2,9 +2,8 @@ module Oversmoothing
 
 ## stdlibs
 
-using Base.Threads: @threads, nthreads
 using LinearAlgebra
-using LinearAlgebra: LowerTriangular, checksquare, ishermitian
+using LinearAlgebra: LowerTriangular, Symmetric, checksquare, ishermitian
 using Statistics
 using Random
 using Random: AbstractRNG, default_rng, rand!, randn!, randsubseq
@@ -16,7 +15,6 @@ using DensityInterface: DensityInterface, logdensityof, densityof
 using HCubature: HCubature
 using LogExpFunctions: logsumexp, softmax
 using MLJLinearModels: MLJLinearModels, MultinomialRegression
-using ProgressLogging: @progress
 using QuadGK: QuadGK
 using StaticArrays: SVector, SMatrix, @SVector
 using StatsBase: StatsBase, sample
@@ -51,10 +49,9 @@ export nb_vertices, nb_communities
 export community_size, community_range, community_of_vertex
 export LinearCSBM1d, CircularCSBM2d
 export empirical_embeddings
-export accuracy_quadrature, accuracy_montecarlo
+export accuracy_quadrature, accuracy_montecarlo, total_variation_quadrature
 export first_layer_densities, random_walk_densities
-export accuracy_zeroth_layer, accuracy_first_layer
-export accuracy_by_depth, optimal_depth
+export accuracy_zeroth_layer, accuracy_first_layer, accuracy_by_depth
 export plot_1d, plot_2d
 
 end # module Oversmoothing
