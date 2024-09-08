@@ -14,13 +14,11 @@ begin
     using DensityInterface
     using LaTeXStrings
     using LinearAlgebra
-    using OhMyThreads
     using Oversmoothing
     using PlutoUI
     using ProgressLogging
     using Random
     using StableRNGs
-    using StaticArrays
 
     BLAS.set_num_threads(1)
 end
@@ -56,30 +54,8 @@ begin
     Makie.set_theme!(MYTHEME)
 end
 
-# ╔═╡ a2f4d87b-1a9a-4e68-9af2-6492154dbcf3
-md"""
-## Theory
-"""
-
-# ╔═╡ 1d1a8351-5183-4c1e-84af-c9f14b6e7505
-md"""
-Lu and Sen (2023) consider a symmetric binary CSBM with $n$ nodes and $p$-dimensional features.
-The edge probabilities are $a/n$ (intra-community) and $b/n$ (inter-community) respectively.
-The Gaussian community features have variance $1$ and mean $\pm u \sqrt{\mu / n}$, where $u \sim \mathcal{N}(0, I_p)$.
-The phase transition for detectability happens at
-```math
-\lambda^2 + \frac{\mu^2}{\gamma} > 1
-```
-where the parameters are $\gamma = \lim n/p$ and $\lambda$ defined by
-```math
-\begin{cases}
-d = (a + b) / 2 \\
-a = d + \lambda \sqrt{d} \\
-b = d - \lambda \sqrt{d}
-\end{cases}
-\implies \lambda = \frac{a - b}{2 \sqrt{d}} = \frac{a-b}{\sqrt{2} \sqrt{a+b}}
-```
-"""
+# ╔═╡ e546264c-6666-4138-8e96-bd6f33f54a07
+IMG_PATH = joinpath(@__DIR__, "images")
 
 # ╔═╡ 3c9cb7de-33eb-4422-ae50-95d5bf7484e0
 md"""
@@ -89,31 +65,35 @@ md"""
 # ╔═╡ c5a94b08-78dc-4dd6-96c2-7ebe488205d7
 let
 	rng = StableRNG(63)
-    C = 5
+    C = 6
     csbm = LinearCSBM1d(; N=100, C=C, p_in=0.03, p_out=0.01, σ=0.1)
 
-    fig = Figure(size=(400, 200))
-    ax = Axis(fig[1, 1])
+    fig = Figure(size=(450, 300))
+    ax = Axis(fig[1, 1], xlabel="only feature", ylabel="density", xticks=1:C)
     for c in 1:C
-        x = [rand(rng, csbm.features[c]) for _ in 1:1000]
-        hist!(ax, first.(x), label="community $c")
+        x = [rand(rng, csbm.features[c]) for _ in 1:500]
+        hist!(ax, first.(x), normalization=:pdf, label="community $c")
     end
+	Legend(fig[0, 1], ax, orientation=:horizontal, nbanks=2)
+	save(joinpath(IMG_PATH, "linear.png"), fig; px_per_unit=5)
     fig
 end
 
 # ╔═╡ c1a99529-cf54-4ff7-ae44-4bdfce781a07
 let
 	rng = StableRNG(63)
-    C = 5
-    csbm = CircularCSBM2d(; N=200, C=C, p_in=0.03, p_out=0.01, σ=0.1, stretch=1)
+    C = 6
+    csbm = CircularCSBM2d(; N=100, C=C, p_in=0.03, p_out=0.01, σ=0.1, stretch=1)
 
-    fig = Figure(size=(400, 400))
-    ax = Axis(fig[1, 1]; aspect=1)
+    fig = Figure(size=(450, 300))
+    ax = Axis(fig[1, 1]; aspect=1, xlabel="feature 1", ylabel="feature 2")
     for c in 1:C
-        x = [rand(rng, csbm.features[c]) for _ in 1:200]
-        scatter!(ax, first.(x), last.(x), label="community $c")
+        x = [rand(rng, csbm.features[c]) for _ in 1:100]
+        scatter!(ax, first.(x), last.(x), label="community $c", alpha=0.5)
     end
-	axislegend(ax)
+	Legend(fig[1, 2], ax, orientation=:vertical)
+	rowsize!(fig.layout, 1, Aspect(1, 1.0))
+	save(joinpath(IMG_PATH, "circular.png"), fig; px_per_unit=5)
     fig
 end
 
@@ -130,14 +110,16 @@ md"""
 # ╔═╡ a7e26ada-e581-4ef6-91ca-f0dba906ebb8
 let
 	rng = StableRNG(63)
-    csbm = LinearCSBM1d(; N=60, C=3, p_in=0.04, p_out=0.02, σ=0.1)
+    csbm = LinearCSBM1d(; N=100, C=3, p_in=0.03, p_out=0.02, σ=0.1)
 
     nb_layers = 2
     nb_graphs = 100
     embeddings = empirical_embeddings(rng, csbm; nb_layers, nb_graphs)
     densities = random_walk_densities(rng, csbm; nb_layers, nb_graphs)
 
-    plot_1d(csbm, embeddings, densities; theme=MYTHEME)
+    fig = plot_1d(csbm, embeddings, densities; theme=MYTHEME)
+	save(joinpath(IMG_PATH, "illustration_1d.png"), fig; px_per_unit=5)
+	fig
 end
 
 # ╔═╡ 67987f14-d637-4f33-b3e9-91597290cb74
@@ -148,21 +130,16 @@ md"""
 # ╔═╡ 0735dfc4-85c0-491b-8bb6-58aa4272b772
 let
 	rng = StableRNG(63)
-    csbm = CircularCSBM2d(; N=60, C=3, p_in=0.04, p_out=0.02, σ=0.1)
+    csbm = CircularCSBM2d(; N=100, C=3, p_in=0.03, p_out=0.02, σ=0.1)
 
     nb_layers = 2
     nb_graphs = 100
     embeddings = empirical_embeddings(rng, csbm; nb_layers, nb_graphs)
     densities = random_walk_densities(rng, csbm; nb_layers, nb_graphs)
 
-    plot_2d(csbm, embeddings, densities; theme=MYTHEME)
-end
-
-# ╔═╡ d504e299-95b1-4874-91a4-1cc365e8d0cd
-let
-	csbm = CircularCSBM2d(; N=60, C=3, p_in=0.04, p_out=0.02, σ=0.1)
-	densities1 = first_layer_densities(csbm)
-	densities1_normal = MultivariateNormal.(densities1)
+    fig = plot_2d(csbm, embeddings, densities; theme=MYTHEME)
+	save(joinpath(IMG_PATH, "illustration_2d.png"), fig; px_per_unit=5)
+	fig
 end
 
 # ╔═╡ f53e238d-6f08-4da0-a5af-7278a7c64e5c
@@ -191,7 +168,7 @@ normality_experiment = let
 
 	N_vals = 50:10:500
 	C = 2
-	p_in = 0.05
+	p_in = 0.03
 	p_out = 0.02
 	σ_vals = 0.01:0.005:0.2
 
@@ -214,8 +191,8 @@ end
 let
 	(; N_vals, σ_vals, total_variation_vals) = normality_experiment
 
-	fig = Figure(size=(500, 500))
-    ax = Axis(fig[1, 1]; aspect=1, xlabel=L"graph size $N$", ylabel=L"noise $\sigma$")
+	fig = Figure(size=(500, 400))
+    ax = Axis(fig[1, 1]; xlabel=L"graph size $N$", ylabel=L"noise $\sigma$")
     hm = heatmap!(
         ax,
         N_vals,
@@ -226,6 +203,7 @@ let
     )
     Colorbar(fig[1, 2], hm; label="total variation distance \nbetween mixture and Gaussian")
 	rowsize!(fig.layout, 1, Aspect(1, 1))
+	save(joinpath(IMG_PATH, "distance_mixture_gaussian.png"), fig; px_per_unit=5)
     fig
 end
 
@@ -276,7 +254,7 @@ let
 
 	acc_diff_vals = accuracy1_vals .- accuracy0_vals
 
-    fig = Figure(size=(500, 500))
+    fig = Figure(size=(500, 450))
     ax = Axis(fig[1, 1]; aspect=1, xlabel=L"inner connectivity $p_{in}$", ylabel=L"outer connectivity $p_{out}$")
     hm = heatmap!(
         ax,
@@ -288,6 +266,7 @@ let
     )
     Colorbar(fig[1, 2], hm; label=L"accuracy improvement after $1$ layer")
 	rowsize!(fig.layout, 1, Aspect(1, 1))
+	save(joinpath(IMG_PATH, "onelayer_improvement_p.png"), fig; px_per_unit=5)
     fig
 end
 
@@ -339,7 +318,7 @@ let
 	(; λ2_vals, Δμ2_vals, accuracy0_vals, accuracy1_vals) = phase_transition_experiment
     acc_diff_vals = accuracy1_vals .- accuracy0_vals
 
-    fig = Figure(size=(500, 500))
+    fig = Figure(size=(500, 450))
     ax = Axis(fig[1, 1]; aspect=1, xlabel=L"graph information level $\lambda^2$", ylabel=L"features information level $(\Delta \mu)^2 = 1/\sigma^2$")
     hm = heatmap!(
         ax,
@@ -351,6 +330,7 @@ let
     )
     Colorbar(fig[1, 2], hm; label=L"accuracy improvement after $1$ layer")
 	rowsize!(fig.layout, 1, Aspect(1, 1))
+	save(joinpath(IMG_PATH, "onelayer_improvement_lambda.png"), fig; px_per_unit=5)
     fig
 end
 
@@ -379,12 +359,12 @@ end
 oscillations_experiments = map(2:5) do C
 	@info "C = $C"
 	rng = StableRNG(63)
-	N = 120
+	N = 100
 	p_in = 0.05
 	p_out = 0.01
 	σ = 0.5
 	
-	nb_layers, nb_trajectories, nb_graphs = 6, 10, 10
+	nb_layers, nb_trajectories, nb_graphs = 5, 20, 50
     
 	csbm = CircularCSBM2d(; N, C, p_in, p_out, σ)
 
@@ -429,8 +409,9 @@ let
 	end
 
 	C_strings = [L"C = %$C" for C in C_vals]
-	Legend(fig[1, 2], scatters, C_strings, "Theory")
+	Legend(fig[1, 2], scatters, C_strings, "Mixture")
 	Legend(fig[2, 2], bands, C_strings, "Regression")
+	save(joinpath(IMG_PATH, "optimal_depth.png"), fig; px_per_unit=5)
     fig
 end
 
@@ -440,8 +421,7 @@ end
 # ╠═10fa26e0-58a9-11ef-1536-e9fc7dc3721e
 # ╠═652e47fb-56d1-4afe-afea-6f551ec39346
 # ╠═8b80f3b5-4fdd-48c8-9f0d-52e35535a653
-# ╟─a2f4d87b-1a9a-4e68-9af2-6492154dbcf3
-# ╟─1d1a8351-5183-4c1e-84af-c9f14b6e7505
+# ╠═e546264c-6666-4138-8e96-bd6f33f54a07
 # ╟─3c9cb7de-33eb-4422-ae50-95d5bf7484e0
 # ╠═c5a94b08-78dc-4dd6-96c2-7ebe488205d7
 # ╠═c1a99529-cf54-4ff7-ae44-4bdfce781a07
@@ -450,7 +430,6 @@ end
 # ╠═a7e26ada-e581-4ef6-91ca-f0dba906ebb8
 # ╟─67987f14-d637-4f33-b3e9-91597290cb74
 # ╠═0735dfc4-85c0-491b-8bb6-58aa4272b772
-# ╠═d504e299-95b1-4874-91a4-1cc365e8d0cd
 # ╟─f53e238d-6f08-4da0-a5af-7278a7c64e5c
 # ╟─c69e1c1f-e5c2-41cf-86c3-6a25c6ff5a9f
 # ╠═cc21e14f-12b1-4cb9-972e-f90750b7a551

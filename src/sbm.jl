@@ -17,8 +17,10 @@ struct StochasticBlockModel{C,T<:Real}
 end
 
 function StochasticBlockModel(N::Integer, C::Integer, p_in::Real, p_out::Real)
-    @assert N % C == 0
-    sizes = fill(N ÷ C, C)
+    sizes = zeros(Int, C)
+    for n in 1:N
+        sizes[1 + (n - 1) % C] += 1
+    end
     connectivities = fill(p_out, C, C)
     for c in 1:C
         connectivities[c, c] = p_in
@@ -106,8 +108,8 @@ function CircularCSBM2d(;
 )
     sbm = SBM(N, C, p_in, p_out)
     r = inv(2 * sinpi(1 / C))
-    radial_vectors = [[cospi(2(c - 1) / C), sinpi(2(c - 1) / C)] for c in 1:C]
-    tangent_vectors = [[-sinpi(2(c - 1) / C), cospi(2(c - 1) / C)] for c in 1:C]
+    radial_vectors = [[cospi(2c / C), sinpi(2c / C)] for c in 1:C]
+    tangent_vectors = [[-sinpi(2c / C), cospi(2c / C)] for c in 1:C]
     μ = [r .* radial_vectors[c] for c in 1:C]
     U = [hcat(radial_vectors[c], tangent_vectors[c]) for c in 1:C]
     D = Diagonal([stretch * σ^2, inv(stretch) * σ^2])

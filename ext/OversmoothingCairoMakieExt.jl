@@ -73,7 +73,7 @@ function Oversmoothing.plot_2d(
     xrange = range(extrema(joint_histogram_x)..., 100)
     yrange = range(extrema(joint_histogram_y)..., 100)
     zs = SVector.(xrange, yrange')
-    ls = [logdensityof.(Ref(densities[l + 1, c]), zs) for l in 0:L, c in 1:C]
+    ls = [densityof.(Ref(densities[l + 1, c]), zs) for l in 0:L, c in 1:C]
 
     colors = distinguishable_colors(C, [RGB(1, 1, 1), RGB(0, 0, 0)]; dropseed=true)
 
@@ -96,10 +96,10 @@ function Oversmoothing.plot_2d(
                 ) for c in 1:C
             ]
             append!(all_axes, axes)
-            for ax in axes
-                linkxaxes!(all_axes[1], ax)
-                linkyaxes!(all_axes[1], ax)
-            end
+            # for ax in axes
+            #     linkxaxes!(all_axes[1], ax)
+            #     linkyaxes!(all_axes[1], ax)
+            # end
 
             lmin, lmax = extrema(mapreduce(vec, vcat, ls[l + 1, :]))
 
@@ -110,7 +110,7 @@ function Oversmoothing.plot_2d(
                     embeddings[l + 1, c][:, 2];
                     color=colors[c],
                     label="community $c",
-                    alpha=2 / 10,
+                    alpha=3 / 100,
                 )
                 contour!(
                     axes[c],
@@ -119,8 +119,8 @@ function Oversmoothing.plot_2d(
                     ls[l + 1, c];
                     colorrange=(lmin, lmax),
                     colormap=:grays,
-                    levels=15,
-                    linewidth=2,
+                    levels=5,
+                    linewidth=1,
                 )
             end
         end
