@@ -1,6 +1,6 @@
 name = "Oversmoothing"
 uuid = "e897de12-cf97-4882-a166-76630c4a311e"
-authors = ["Guillaume Dalle <22795598+gdalle@users.noreply.github.com>"]
+authors = ["Anonymous"]
 version = "0.1.0"
 
 [deps]
