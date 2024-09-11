@@ -6,7 +6,6 @@ using InteractiveUtils
 
 # ╔═╡ 10fa26e0-58a9-11ef-1536-e9fc7dc3721e
 begin
-    using Revise
     using Pkg
     Pkg.activate(@__DIR__)
 
