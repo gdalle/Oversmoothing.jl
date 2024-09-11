@@ -11,6 +11,7 @@ function Oversmoothing.plot_1d(
     embeddings::Matrix{<:Matrix},
     densities::Matrix{<:Mixture};
     theme=theme_latexfonts(),
+    figsize=(500, 500),
     path=nothing,
 )
     (; sbm, features) = csbm
@@ -23,7 +24,7 @@ function Oversmoothing.plot_1d(
     colors = distinguishable_colors(C, [RGB(1, 1, 1), RGB(0, 0, 0)]; dropseed=true)
 
     with_theme(theme) do
-        fig = Figure(; size=(500, 200 * (L + 1)))
+        fig = Figure(; size=figsize)
         axes = Axis[]
         for l in 0:L
             Label(fig[l + 1, 2], "layer $l"; tellheight=false, rotation=1.5π)
@@ -61,6 +62,7 @@ function Oversmoothing.plot_2d(
     embeddings::Matrix{<:Matrix},
     densities::Matrix{<:Mixture};
     theme=theme_latexfonts(),
+    figsize=(500, 500),
     path=nothing,
 )
     (; sbm, features) = csbm
@@ -75,16 +77,21 @@ function Oversmoothing.plot_2d(
     zs = SVector.(xrange, yrange')
     ls = [densityof.(Ref(densities[l + 1, c]), zs) for l in 0:L, c in 1:C]
 
+    combined_densities = [
+        Mixture(densities[l + 1, :], sbm.sizes ./ sum(sbm.sizes)) for l in 0:L
+    ]
+    combined_ls = [densityof.(Ref(combined_densities[l + 1]), zs) for l in 0:L]
+
     colors = distinguishable_colors(C, [RGB(1, 1, 1), RGB(0, 0, 0)]; dropseed=true)
 
     with_theme(theme) do
-        fig = Figure(; size=(200 * C, 200 * (L + 1)))
+        fig = Figure(; size=figsize)
         all_axes = Axis[]
         for c in 1:C
             Label(fig[0, c], "community $c"; tellwidth=false)
         end
+        Label(fig[0, C + 1], "all communities"; tellwidth=false)
         for l in 0:L
-            Label(fig[l + 1, C + 1], "layer $l"; tellheight=false, rotation=1.5π)
             axes = [
                 Axis(
                     fig[l + 1, c];
@@ -93,13 +100,13 @@ function Oversmoothing.plot_2d(
                     xticklabelsvisible=l == L,
                     yticksvisible=c == 1,
                     yticklabelsvisible=c == 1,
-                ) for c in 1:C
+                ) for c in 1:(C + 1)
             ]
             append!(all_axes, axes)
-            # for ax in axes
-            #     linkxaxes!(all_axes[1], ax)
-            #     linkyaxes!(all_axes[1], ax)
-            # end
+            for ax in axes
+                linkxaxes!(all_axes[1], ax)
+                linkyaxes!(all_axes[1], ax)
+            end
 
             lmin, lmax = extrema(mapreduce(vec, vcat, ls[l + 1, :]))
 
@@ -123,6 +130,19 @@ function Oversmoothing.plot_2d(
                     linewidth=1,
                 )
             end
+
+            contour!(
+                axes[C + 1],
+                xrange,
+                yrange,
+                combined_ls[l + 1];
+                colorrange=(lmin, lmax),
+                colormap=:grays,
+                levels=5,
+                linewidth=1,
+            )
+
+            Label(fig[l + 1, C + 2], "layer $l"; tellheight=false, rotation=1.5π)
         end
         resize_to_layout!(fig)
         if !isnothing(path)

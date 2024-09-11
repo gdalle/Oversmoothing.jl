@@ -75,7 +75,6 @@ let
         hist!(ax, first.(x), normalization=:pdf, label="community $c")
     end
 	Legend(fig[0, 1], ax, orientation=:horizontal, nbanks=2)
-	save(joinpath(IMG_PATH, "linear.png"), fig; px_per_unit=5)
     fig
 end
 
@@ -93,7 +92,6 @@ let
     end
 	Legend(fig[1, 2], ax, orientation=:vertical)
 	rowsize!(fig.layout, 1, Aspect(1, 1.0))
-	save(joinpath(IMG_PATH, "circular.png"), fig; px_per_unit=5)
     fig
 end
 
@@ -117,7 +115,7 @@ let
     embeddings = empirical_embeddings(rng, csbm; nb_layers, nb_graphs)
     densities = random_walk_densities(rng, csbm; nb_layers, nb_graphs)
 
-    fig = plot_1d(csbm, embeddings, densities; theme=MYTHEME)
+    fig = plot_1d(csbm, embeddings, densities; theme=MYTHEME, figsize=(600, 400))
 	save(joinpath(IMG_PATH, "illustration_1d.png"), fig; px_per_unit=5)
 	fig
 end
@@ -137,7 +135,7 @@ let
     embeddings = empirical_embeddings(rng, csbm; nb_layers, nb_graphs)
     densities = random_walk_densities(rng, csbm; nb_layers, nb_graphs)
 
-    fig = plot_2d(csbm, embeddings, densities; theme=MYTHEME)
+    fig = plot_2d(csbm, embeddings, densities; theme=MYTHEME, figsize=(700, 500))
 	save(joinpath(IMG_PATH, "illustration_2d.png"), fig; px_per_unit=5)
 	fig
 end
@@ -270,70 +268,6 @@ let
     fig
 end
 
-# ╔═╡ aed0b4be-36c4-412d-a9a0-d0553e67cc61
-md"""
-## Phase transition
-"""
-
-# ╔═╡ f57cf269-d9a4-4393-8a21-ff898881c1ee
-@kwdef struct PhaseTransitionExperiment
-	N
-	C
-	d
-	λ2_vals
-	Δμ2_vals
-	accuracy0_vals
-	accuracy1_vals
-end
-
-# ╔═╡ 8aafdda1-9730-4954-902c-c22669503f91
-phase_transition_experiment = let
-	N = 100
-    C = 2
-	d = 5
-	
-	λ2_vals = 0.05:0.02:1.0
-	Δμ2_vals = 0.05:0.02:2.0
-    accuracy0_vals = fill(NaN, length(λ2_vals), length(Δμ2_vals))
-    accuracy1_vals = fill(NaN, length(λ2_vals), length(Δμ2_vals))
-
-    @progress for i in eachindex(λ2_vals), j in eachindex(Δμ2_vals)
-		λ, Δμ = sqrt(λ2_vals[i]), sqrt(Δμ2_vals[j])
-		σ = inv(Δμ)
-		a = d + λ * sqrt(d)
-		b = d - λ * sqrt(d)
-        csbm = LinearCSBM1d(; N, C, p_in=a/N, p_out=b/N, σ)
-
-		accuracy0_vals[i, j] = accuracy_zeroth_layer(csbm; rtol=1e-5) |> value
-		accuracy1_vals[i, j] = accuracy_first_layer(csbm; rtol=1e-5) |> value
-    end
-
-    PhaseTransitionExperiment(;
-		N, C, d, λ2_vals, Δμ2_vals, accuracy0_vals, accuracy1_vals
-	)
-end
-
-# ╔═╡ 5c6f6a76-378e-4687-82ab-40352f935a58
-let
-	(; λ2_vals, Δμ2_vals, accuracy0_vals, accuracy1_vals) = phase_transition_experiment
-    acc_diff_vals = accuracy1_vals .- accuracy0_vals
-
-    fig = Figure(size=(500, 450))
-    ax = Axis(fig[1, 1]; aspect=1, xlabel=L"graph information level $\lambda^2$", ylabel=L"features information level $(\Delta \mu)^2 = 1/\sigma^2$")
-    hm = heatmap!(
-        ax,
-        λ2_vals,
-        Δμ2_vals,
-        acc_diff_vals;
-        colormap=Reverse(:curl),
-        colorrange=(-maximum(abs, acc_diff_vals), maximum(abs, acc_diff_vals)),
-    )
-    Colorbar(fig[1, 2], hm; label=L"accuracy improvement after $1$ layer")
-	rowsize!(fig.layout, 1, Aspect(1, 1))
-	save(joinpath(IMG_PATH, "onelayer_improvement_lambda.png"), fig; px_per_unit=5)
-    fig
-end
-
 # ╔═╡ 9a881c91-fffb-416a-beb9-ad5985063273
 md"""
 # More layers
@@ -406,6 +340,18 @@ let
 		push!(scatters, s)
 		push!(errors, e)
 		push!(C_vals, C)
+
+		local_extrema = [
+			L for L in 1:(nb_layers-1) if (
+				(val_rw[L+1] > max(val_rw[L], val_rw[L+2])) ||
+				(val_rw[L+1] < min(val_rw[L], val_rw[L+2]))
+			)
+		]
+		scatter!(ax, local_extrema, val_rw[local_extrema .+ 1], markersize=45, marker=:circle, alpha=0, strokecolor=:black, strokewidth=3)
+	end
+
+	for c in C_vals
+		
 	end
 
 	C_strings = [L"C = %$C" for C in C_vals]
@@ -439,10 +385,6 @@ end
 # ╠═4b7d7234-ece3-4875-a232-562ebe418055
 # ╠═c5ddce4c-21ae-4eb9-a411-a576ac8f766d
 # ╠═2b272855-8b04-47d0-b2c5-c672ab633f79
-# ╟─aed0b4be-36c4-412d-a9a0-d0553e67cc61
-# ╠═f57cf269-d9a4-4393-8a21-ff898881c1ee
-# ╠═8aafdda1-9730-4954-902c-c22669503f91
-# ╠═5c6f6a76-378e-4687-82ab-40352f935a58
 # ╟─9a881c91-fffb-416a-beb9-ad5985063273
 # ╟─4c090dd7-f296-4836-bee4-0ed43a3ea7ec
 # ╠═539f2393-3ba8-4287-8e82-aa602e76cf01
