@@ -8,6 +8,7 @@ using InteractiveUtils
 begin
     using Pkg
     Pkg.activate(@__DIR__)
+	Pkg.instantiate()
 
     using CairoMakie
     using DensityInterface
